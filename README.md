@@ -1,17 +1,39 @@
-# shiny_immune_map_results
-This is a repository that includes the pilot data necessary to start building a shiny app to communicate the results of our immune map paper dynamically
+# Shiny Immune Map Results
 
-The data is for cell proportion changes in the immune system throughout the body. 
+This repository contains pilot data and resources for building a **Shiny app** to communicate the results of our immune map paper dynamically. The aim is to create an interactive platform that visualises and explores cell proportion changes in the immune system across the body.
 
-This is the [preprint](https://www.biorxiv.org/content/10.1101/2023.06.08.542671v3) that we revamped and soon ready to resubmit.
+## About the Data
 
-The tasks are
+The provided data includes insights into immune cell proportions, and gene expression changes throughout the body. These data are foundational for developing a personalised medicine approach to immune system visualisation.
 
-- lists the interactive tables (one provided here, estimates_age_bins_effect_tibble_only.rds) of hypothesis test statistics. 
-- has an interactive [anatogram](https://github.com/jespermaag/gganatogram) with slides to create a personalised medicine representation of immune cell composition as a body heatmap. This can be accompained with dynamic table which visualises the mean and error values of the cell proportion and gene RNA abundance.
+The project builds on findings from our preprint: [Preprint on bioRxiv](https://www.biorxiv.org/content/10.1101/2023.06.08.542671v3). We have revamped the manuscript and are preparing it for resubmission.
 
- <img width="326" alt="image" src="https://github.com/user-attachments/assets/0bcd17e8-7665-423a-8993-9c0074068705">
+## Objectives and Tasks
 
- For this task [sccomp](https://github.com/MangiolaLaboratory/sccomp) backend is needed to make the proportion predictions, inputted by the sliders.
+1. **Interactive Tables**  
+   - Develop tables to explore hypothesis test statistics.  
+   - Example: The file `estimates_age_bins_effect_tibble_only.rds` provides an initial dataset for this feature.  
 
-We will need to build an analogue interface for the gene expression changes.
+2. **Interactive Immune Composition Visualisation**  
+   - Implement an interactive [anatogram](https://github.com/jespermaag/gganatogram).  
+   - Users will be able to adjust sliders to create a personalised medicine representation of immune cell composition as a body heatmap.  
+
+   - **Additional Features:**  
+     - Include a dynamic table displaying mean values and errors for cell proportions and RNA abundance.  
+     - Use the [sccomp](https://github.com/MangiolaLaboratory/sccomp) backend to generate cell proportion predictions based on user inputs.  
+
+   ![Body Heatmap Preview](https://github.com/user-attachments/assets/0bcd17e8-7665-423a-8993-9c0074068705)
+
+3. **Gene Expression Interface**  
+   - Design a parallel interface to visualise and interact with gene expression changes.  
+
+
+### Prerequisites
+
+- Familiarity with R and Shiny.
+- Knowledge of `gganatogram` for anatomical visualisations.
+- Understanding of the `sccomp` package for backend processing, and differential-expression models.
+
+### How to Contribute
+
+Please get in contact with us. 
