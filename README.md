@@ -16,7 +16,8 @@ The project builds on findings from our preprint: [Preprint on bioRxiv](https://
 
 2. **Interactive Immune Composition Visualisation**  
    - Implement an interactive [anatogram](https://github.com/jespermaag/gganatogram).  
-   - Users will be able to adjust sliders to create a personalised medicine representation of immune cell composition as a body heatmap.  
+   - Users will be able to adjust (activate/deactivate) 3 sliders (age bins, sex, ethnicity) to create a personalised medicine representation of immune cell composition as a body heatmap.
+   - The input data is [here](https://github.com/stemangiola/shiny_immune_map_results/blob/main/estimates_age_bins_effect_tibble_only.rds) 
 
    - **Additional Features:**  
      - Include a dynamic table displaying mean values and errors for cell proportions and RNA abundance.  
@@ -25,7 +26,7 @@ The project builds on findings from our preprint: [Preprint on bioRxiv](https://
    ![Body Heatmap Preview](https://github.com/user-attachments/assets/0bcd17e8-7665-423a-8993-9c0074068705)
 
 3. **Gene Expression Interface**  
-   - Design a parallel interface to visualise and interact with gene expression changes.  
+   - Design a parallel interface to visualise and interact with gene expression profiles and changes.  
 
 
 ### Prerequisites
