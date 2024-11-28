@@ -108,29 +108,11 @@ tar_script({
         estimate = readRDS(estimates_file)
         
         tribble(
-          ~ name, ~ formula_composition, ~ new_data, ~ contrasts,
+          ~ name, ~ contrasts,
           
           # Tissue level, age
           "age",
-          "~ 1 + age_days_scaled + age_bin_sex_specific + (1 + age_days_scaled + age_bin_sex_specific | tissue_groups)",  
-          input_data |> 
-            distinct(tissue_groups) |> 
-            expand_grid(age_bin_sex_specific = input_data |> pull(age_bin_sex_specific) |> unique()) |> 
-            mutate(sex = "unknown") |> 
-            mutate(age_days = age_range_sex_specific(age_bin_sex_specific, sex)) |> 
-            mutate(age_days_scaled = 
-                     ( age_days -  (20 * 365)  ) / 
-                     (input_data |> pull(age_days) |> sd())
-            ) |>           
-            mutate(n = 5000) |> 
-            rowid_to_column("sample_id") |> 
-            mutate(sample_id = sample_id |> as.character()) |> 
-            
-            # Drop combinations not present in the model
-            inner_join(input_data |> distinct(tissue_groups, age_bin_sex_specific)) |> 
-            mutate(ethnicity = "european", sex = "female"),
           
-          # Contrasts
           inner_join(
             estimate |>
               filter(parameter |> str_detect("age_days_scaled___")) |>
@@ -156,20 +138,6 @@ tar_script({
           
           # Tissue level, sex
           "sex",
-          "~ 1 + sex + (1 + sex | tissue_groups)",  
-          input_data |> 
-            distinct(tissue_groups) |> 
-            expand_grid(sex = c("male", "female")) |> 
-            
-            mutate(n = 5000) |> 
-            rowid_to_column("sample_id") |> 
-            mutate(sample_id = sample_id |> as.character()) |> 
-            
-            # Drop combinations not present in the model
-            inner_join(input_data |> distinct(tissue_groups, sex)) |> 
-            mutate(ethnicity = "European", age_bin_sex_specific = "Adolescence"),
-          
-          # Contrasts
           estimate |>
             filter(parameter |> str_detect("^sexmale___")) |>
             distinct(parameter) |>
@@ -183,19 +151,6 @@ tar_script({
           
           # Tissue level, ethnicity
           "ethnicity",
-          "~ 1 + ethnicity_groups + (1 + ethnicity_groups | tissue_groups)",  
-          input_data |> 
-            distinct(tissue_groups) |> 
-            expand_grid(ethnicity_groups = input_data |> pull(ethnicity_groups) |> unique()) |> 
-            
-            mutate(n = 5000) |> 
-            rowid_to_column("sample_id") |> 
-            mutate(sample_id = sample_id |> as.character()) |> 
-            
-            # Drop combinations not present in the model
-            inner_join(input_data |> distinct(tissue_groups, ethnicity_groups)) ,
-          
-          # Contrasts
           estimate |>
             filter(parameter |> str_detect("^ethnicity_groups[a-zA-Z ]+___")) |>
             distinct(parameter) |>
@@ -208,127 +163,55 @@ tar_script({
             deframe( ),
           
           # Tissue level, age + sex
-          "age + sex",
-          "~ 1 + age_days_scaled + age_bin_sex_specific*sex + (1 + age_days_scaled + age_bin_sex_specific*sex | tissue_groups)",  
-          input_data |> 
-            distinct(tissue_groups) |> 
-            expand_grid(age_bin_sex_specific = input_data |> pull(age_bin_sex_specific) |> unique()) |> 
-            expand_grid(sex = c("male", "female")) |> 
-            mutate(age_days = age_range_sex_specific(age_bin_sex_specific, sex)) |> 
-            #left_join(map_age_to_scaled_age)
-            mutate(age_days_scaled = 
-                     ( age_days -  (20 * 365)  ) / 
-                     (input_data |> pull(age_days) |> sd())
-            ) |> 
-            mutate(n = 5000) |> 
-            rowid_to_column("sample_id") |> 
-            mutate(sample_id = sample_id |> as.character()) |> 
+          "age:sex",
+               estimate |>
+                 filter(parameter |> str_detect("age_bin_sex_specific[a-zA-Z ]+:sexmale___")) |>
+                 distinct(parameter) |>
+                 tidyr::extract(parameter, "tissue_groups", ".+___(.+)", remove = FALSE) |>
+                 tidyr::extract(parameter, c("age_bin_groups"), "age_bin_sex_specific([a-zA-Z ]+):sexmale___.+", remove = FALSE) |>
+                 
+                 extract(parameter, "fixed_bins_interaction", "(.*)___.*", remove = FALSE) |> 
+                 dplyr::rename(parameter_bins_interaction = parameter) |> 
+    
             
-            # Drop combinations not present in the model
-            inner_join(input_data |> distinct(tissue_groups, age_bin_sex_specific, sex)) ,
-          
-          # Contrasts
-          list(estimate |>
-              filter(parameter |> str_detect("age_days_scaled___")) |>
-              distinct(parameter) |>
-              tidyr::extract(parameter, "tissue_groups", ".+___(.+)", remove = FALSE) |>
-              extract(parameter, "fixed_continuous", "(.*)___.*", remove = FALSE) |> 
-              dplyr::rename(parameter_continuous = parameter),
-            
-            estimate |>
-              filter(parameter |> str_detect("age_bin_sex_specific[a-zA-Z ]+___")) |>
-              distinct(parameter) |>
-              tidyr::extract(parameter, "tissue_groups", ".+___(.+)", remove = FALSE) |>
-              tidyr::extract(parameter, c("age_bin_groups"), "age_bin_sex_specific([a-zA-Z ]+)___.+", remove = FALSE) |>
-              
-              extract(parameter, "fixed_bins", "(.*)___.*", remove = FALSE) |> 
-              dplyr::rename(parameter_bins = parameter) ,
-            
-            estimate |>
-              filter(parameter |> str_detect("age_bin_sex_specific[a-zA-Z ]+:sexmale___")) |>
-              distinct(parameter) |>
-              tidyr::extract(parameter, "tissue_groups", ".+___(.+)", remove = FALSE) |>
-              tidyr::extract(parameter, c("age_bin_groups"), "age_bin_sex_specific([a-zA-Z ]+):sexmale___.+", remove = FALSE) |>
-              
-              extract(parameter, "fixed_bins_interaction", "(.*)___.*", remove = FALSE) |> 
-              dplyr::rename(parameter_bins_interaction = parameter) 
-          ) |>
-            reduce(inner_join) |> 
-            
-            mutate(contrast = glue("`{fixed_continuous}` + `{parameter_continuous}` + `{fixed_bins}` + `{parameter_bins}` + `{fixed_bins_interaction}` + `{parameter_bins_interaction}`") |> as.character()) |>
+            mutate(contrast = glue("`{fixed_bins_interaction}` + `{parameter_bins_interaction}`") |> as.character()) |>
             mutate(age_bin_tissue_groups = glue("{age_bin_groups} {tissue_groups} sexmale")) |> 
             select(age_bin_tissue_groups, contrast) |> 
             deframe( ),
           
-          # Tissue level, age + ethnicity
-          "age + ethnicity",
-          "~ 1 + age_days_scaled + age_bin_sex_specific + ethnicity_groups + (1 + age_days_scaled + age_bin_sex_specific  + ethnicity_groups | tissue_groups)",  
-          input_data |> 
-            distinct(tissue_groups) |> 
-            expand_grid(age_bin_sex_specific = input_data |> pull(age_bin_sex_specific) |> unique()) |> 
-            expand_grid(ethnicity_groups = input_data |> pull(ethnicity_groups) |> unique()) |> 
-            mutate(sex = "unknown") |> 
-            mutate(age_days = age_range_sex_specific(age_bin_sex_specific, sex)) |> 
-            mutate(age_days_scaled = 
-                     ( age_days -  (20 * 365)  ) / 
-                     (input_data |> pull(age_days) |> sd())
-            ) |> 
-            mutate(n = 5000) |> 
-            rowid_to_column("sample_id") |> 
-            mutate(sample_id = sample_id |> as.character()) |> 
-            
-            # Drop combinations not present in the model
-            inner_join(input_data |> distinct(tissue_groups, age_bin_sex_specific, ethnicity_groups)) ,
-          
-          # Contrasts
-          NA_character_,
-          
-          # Tissue level, sex + ethnicity
-          "sex + ethnicity",
-          "~ 1 + sex + ethnicity_groups + (1 + sex + ethnicity_groups | tissue_groups)",  
-          input_data |> 
-            distinct(tissue_groups) |> 
-            expand_grid(age_bin_sex_specific = input_data |> pull(age_bin_sex_specific) |> unique()) |> 
-            expand_grid(ethnicity_groups = input_data |> pull(ethnicity_groups) |> unique()) |> 
-            mutate(sex = "unknown") |> 
-            mutate(age_days = age_range_sex_specific(age_bin_sex_specific, sex)) |> 
-            mutate(age_days_scaled = 
-                     ( age_days -  (20 * 365)  ) / 
-                     (input_data |> pull(age_days) |> sd())
-            ) |> 
-            mutate(n = 5000) |> 
-            rowid_to_column("sample_id") |> 
-            mutate(sample_id = sample_id |> as.character()) |> 
-            
-            # Drop combinations not present in the model
-            inner_join(input_data |> distinct(tissue_groups, sex, age_bin_sex_specific, ethnicity_groups)) ,
-          
-          # Contrasts
-          NA_character_
-          
         ) },
-      formula_composition,
+      name,
       packages = c("dplyr", "tibble", "tidyr", "glue"), 
       deployment = "main"
     ),
     tar_target(
       predictions,
-      formulae_and_new_data |> mutate(prediction = map2(
-        formula_composition, new_data,
-        ~ estimates_file |> 
-          readRDS() |> 
-          sccomp_predict(
-            formula_composition = .x |> as.formula(),
-            new_data = .y,
-            mcmc_seed = 42,
-            summary_instead_of_draws = TRUE
-          )                               
-        
-      )) |> 
-        
-        # Make the object lighter
-        select(-new_data),
-      pattern = map(formulae_and_new_data),
+      estimates_file |> 
+        readRDS() |> 
+        sccomp_predict(
+          formula_composition = ~ 1 + age_days_scaled + age_bin_sex_specific*sex + ethnicity_groups + 
+            (1 + age_days_scaled + age_bin_sex_specific*sex + ethnicity_groups | tissue_groups),
+          new_data = 
+            expand_grid(
+              tissue_groups = input_data |> pull(tissue_groups) |> unique(),
+              age_bin_sex_specific = input_data |> pull(age_bin_sex_specific) |> unique(), 
+              sex = c("male", "female"),
+              ethnicity_groups = input_data |> pull(ethnicity_groups) |> unique()
+            ) |> 
+            mutate(age_days = age_range_sex_specific(age_bin_sex_specific, sex)) |> 
+            mutate(age_days_scaled = 
+                     ( age_days -  (20 * 365)  ) / 
+                     (input_data |> pull(age_days) |> sd())
+            ) |>           
+            mutate(n = 5000) |> 
+            rowid_to_column("sample_id") |> 
+            mutate(sample_id = sample_id |> as.character()) |> 
+            
+            inner_join( input_data |> distinct(tissue_groups, age_bin_sex_specific, sex)) |> 
+            inner_join( input_data |> distinct(tissue_groups, ethnicity_groups)) ,
+          mcmc_seed = 42,
+          summary_instead_of_draws = TRUE
+        ) ,
       resources = tar_resources(crew = tar_resources_crew("slurm_160")), 
       packages = "sccomp"
     ),
@@ -341,10 +224,7 @@ tar_script({
           readRDS() |> 
           sccomp_test(contrasts = .x)                               
         
-      )) |> 
-        
-        # Make the object lighter
-        select(-new_data),
+      )),
       pattern = map(formulae_and_new_data),
       resources = tar_resources(crew = tar_resources_crew("slurm_160")), 
       packages = "sccomp"
@@ -370,9 +250,16 @@ tar_read(
   predictions,
   store = "/vast/projects/mangiola_immune_map/PostDoc/immuneHealthyBodyMap/sccomp_on_cellNexus_1_0_1_regularised/_targets_shiny", 
 ) |> 
-  mutate(name = c("age" ,    "age + ethnicity",     "age + sex" ,           "ethnicity"  ,   "sex"      ,      "sex + ethnicity") ) |> 
-  select(name, everything()) |> 
-  saveRDS("~/PostDoc/immuneHealthyBodyMap/cell_proportion_for_shiny_app.rds", compress = "xz")
+  saveRDS("~/labHead/shiny_immune_map_results/cell_proportion_for_shiny_app.rds", compress = "xz")
+
+tar_read(
+  hypothesis_testing,
+  store = "/vast/projects/mangiola_immune_map/PostDoc/immuneHealthyBodyMap/sccomp_on_cellNexus_1_0_1_regularised/_targets_shiny", 
+) |> 
+  select(name, prediction) |> 
+  unnest(prediction) |> select(factor = name, 2, 3, 5, 6, 7, 8, 9) |> 
+  saveRDS("~/labHead/shiny_immune_map_results/estimates_age_bins_effect_tibble_only.rds", compress = "xz")
+
 
 system("~/bin/rclone copy /vast/projects/mangiola_immune_map/PostDoc/immuneHealthyBodyMap/sccomp_on_cellNexus_1_0_1/cell_metadata_1_0_1_sccomp_input.rds box_adelaide:/Mangiola_ImmuneAtlas/taskforce_shared_folder/")
 
