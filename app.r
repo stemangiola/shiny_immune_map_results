@@ -1,5 +1,7 @@
 library(shiny)
 library(gganatogram)
+library(shinyBS)
+library(shinyWidgets)
 
 prop_data <- readRDS("cell_proportion_for_shiny_app.rds")
 
