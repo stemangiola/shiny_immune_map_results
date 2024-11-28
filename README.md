@@ -35,6 +35,12 @@ The project builds on findings from our preprint: [Preprint on bioRxiv](https://
 - Knowledge of `gganatogram` for anatomical visualisations.
 - Understanding of the `sccomp` package for backend processing, and differential-expression models.
 
+### This is a good way to launch shiny from github
+```r
+library(shiny)
+runGitHub( "gganatogram", "jespermaag",  subdir = "shiny")
+```
+
 ### How to Contribute
 
 Please get in contact with us. 
