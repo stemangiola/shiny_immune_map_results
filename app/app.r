@@ -66,15 +66,17 @@ female_organ_list <- list(
 )
 
 make_plot_data <- function(data, celltype, male_organ_map, female_organ_map, age = NULL, ethnicity = NULL, sex = "male") {
+    
+    out <- data
     if (!is.null(age)) {
-        out <- data[data$age_bin_sex_specific == age, ]
+        out <- out[out$age_bin_sex_specific == age, ]
     }
 
     if (!is.null(ethnicity)) {
-        out <- data[data$ethnicity_groups == ethnicity, ]
+        out <- out[out$ethnicity_groups == ethnicity, ]
     }
 
-    out <- data[data$cell_type_unified_ensemble == celltype & data$sex == sex, ]
+    out <- out[out$cell_type_unified_ensemble == celltype & out$sex == sex, ]
 
     if (sex == "male") {
         # Get value for each organ based on the matching name of the organ group it is a part of
