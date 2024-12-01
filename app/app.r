@@ -69,6 +69,7 @@ female_organ_list <- list(
 
 make_plot_data <- function(data, celltype, male_organ_map, female_organ_map, age = NULL, ethnicity = NULL, sex = "male") {
     out <- data
+
     if (!is.null(age)) {
         out <- out[out$age_bin_sex_specific == age, ]
     }
@@ -82,9 +83,15 @@ make_plot_data <- function(data, celltype, male_organ_map, female_organ_map, age
     if (sex == "male") {
         # Get value for each organ based on the matching name of the organ group it is a part of
         out_df <- data.frame(organ = unlist(male_organ_map))
+
+        # Order organs so plot order puts smaller stuff on top, generally
+        out_df$organ <- factor(out_df$organ, levels = hgMale_key$organ)
+
         out_df$tissue_groups <- gsub("\\d", "", rownames(out_df))
     } else {
         out_df <- data.frame(organ = unlist(female_organ_map))
+        out_df$organ <- factor(out_df$organ, levels = hgFemale_key$organ)
+
         out_df$tissue_groups <- gsub("\\d", "", rownames(out_df))
     }
 
@@ -92,6 +99,8 @@ make_plot_data <- function(data, celltype, male_organ_map, female_organ_map, age
     out_df$proportion_mean <- out$proportion_mean[match(out_df$tissue_groups, out$tissue_groups)]
     out_df$proportion_lower <- out$proportion_lower[match(out_df$tissue_groups, out$tissue_groups)]
     out_df$proportion_upper <- out$proportion_upper[match(out_df$tissue_groups, out$tissue_groups)]
+
+    out_df <- with(out_df, out_df[order(organ),])
 
     out_df
 }
