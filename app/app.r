@@ -100,25 +100,26 @@ ui <- navbarPage(
     tabPanel(
         "Immune Proportions",
         sidebarLayout(
-            sidebarPanel(width = 2,
+            sidebarPanel(width = 3,
                 h3("Data Selection"),
                 selectInput("cell_type", "Cell Type", choices = unique(prop_data$cell_type_unified_ensemble)),
                 selectInput("ethnicity", "Ethnicity", choices = unique(prop_data$ethnicity_groups)),
-                selectInput("age", "Age", choices = unique(prop_data$age_bin_sex_specific))
+                sliderTextInput("age", "Age", choices = c("Infancy", "Childhood", "Adolescence", "Young Adulthood", "Middle Age", "Senior"), grid = TRUE)
+                #selectInput("age", "Age", choices = unique(prop_data$age_bin_sex_specific))
             ),
-            mainPanel(width = 10,
+            mainPanel(width = 9,
                 fluidRow(
                     column(6, 
                         h3("Male Proportions"),
-                        plotOutput("male_anatogram", width = "400px", height = "600px"),
+                        plotOutput("male_anatogram", width = "350px", height = "500px"),
                         br(),
-                        div(DTOutput("male_props"), style = "font-size:80%;")
+                        div(DTOutput("male_props"), style = "font-size:70%;")
                     ),
                     column(6,
                         h3("Female Proportions"),
-                        plotOutput("female_anatogram", width = "400px", height = "600px"),
+                        plotOutput("female_anatogram", width = "350px", height = "500px"),
                         br(),
-                        div(DTOutput("female_props"), style = "font-size:80%;")
+                        div(DTOutput("female_props"), style = "font-size:70%;")
                     )
                 )
             )
@@ -127,7 +128,7 @@ ui <- navbarPage(
     tabPanel(
         "Immune Proportions Table",
         br(),
-        div(DTOutput("full_data"), style = "font-size:80%;")
+        div(DTOutput("full_data"), style = "font-size:70%;")
     ),
     tabPanel(
         "Gene Expression",
