@@ -67,7 +67,7 @@ female_organ_list <- list(
     "brainstem and cerebellar structures" = c("spinal_cord", "cerebellum", "cerebellar_hemisphere")
 )
 
-make_plot_data <- function(data, celltype, male_organ_map, female_organ_map, age = NULL, ethnicity = NULL, sex = "male") {
+make_plot_data <- function(data, celltype, male_organ_map, female_organ_map, tissue_groups = NULL, age = NULL, ethnicity = NULL, sex = "male") {
     out <- data
 
     if (!is.null(age)) {
@@ -96,11 +96,14 @@ make_plot_data <- function(data, celltype, male_organ_map, female_organ_map, age
     }
 
     out_df$value <- out$proportion_mean[match(out_df$tissue_groups, out$tissue_groups)]
-    out_df$proportion_mean <- out$proportion_mean[match(out_df$tissue_groups, out$tissue_groups)]
-    out_df$proportion_lower <- out$proportion_lower[match(out_df$tissue_groups, out$tissue_groups)]
-    out_df$proportion_upper <- out$proportion_upper[match(out_df$tissue_groups, out$tissue_groups)]
+    out_df$CI_lower <- out$proportion_lower[match(out_df$tissue_groups, out$tissue_groups)]
+    out_df$CI_upper <- out$proportion_upper[match(out_df$tissue_groups, out$tissue_groups)]
 
-    out_df <- with(out_df, out_df[order(organ),])
+    if (!is.null(tissue_groups)) {
+        out_df <- out_df[out_df$tissue_groups %in% tissue_groups, ]
+    }
+
+    out_df <- with(out_df, out_df[order(organ), ])
 
     out_df
 }
@@ -113,9 +116,26 @@ ui <- navbarPage(
             sidebarPanel(
                 width = 3,
                 h4("Data Selection"),
-                selectInput("cell_type", "Cell Type", choices = unique(prop_data$cell_type_unified_ensemble)),
-                selectInput("ethnicity", "Ethnicity", choices = unique(prop_data$ethnicity_groups)),
-                sliderTextInput("age", "Age", choices = c("Infancy", "Childhood", "Adolescence", "Young Adulthood", "Middle Age", "Senior"), grid = TRUE),
+                selectInput("cell_type", "Cell Type",
+                    choices = unique(prop_data$cell_type_unified_ensemble)
+                ),
+                selectInput("ethnicity", "Ethnicity",
+                    choices = unique(prop_data$ethnicity_groups)
+                ),
+                sliderTextInput("age", "Age",
+                    choices = c("Infancy", "Childhood", "Adolescence", "Young Adulthood", "Middle Age", "Senior"),
+                    grid = TRUE
+                ),
+                pickerInput("tissue_groups", "Tissue Groups",
+                    choices = unique(prop_data$tissue_groups),
+                    multiple = TRUE,
+                    selected = unique(prop_data$tissue_groups),
+                    options = pickerOptions(
+                        actionsBox = TRUE,
+                        size = 10,
+                        selectedTextFormat = "count > 3"
+                    )
+                ),
                 # selectInput("age", "Age", choices = unique(prop_data$age_bin_sex_specific))
                 hr(),
                 h4("Plot Aesthetics"),
@@ -127,11 +147,17 @@ ui <- navbarPage(
                     ),
                     column(
                         6,
-                        selectInput("palette", "Palette", choices = c("viridis", "magma", "plasma", "inferno", "cividis", "mako", "rocket", "turbo")),
-                        numericInput("opacity", "Opacity", value = 1, min = 0.01, max = 1, step = 0.1),
+                        selectInput("palette", "Palette",
+                            choices = c("viridis", "magma", "plasma", "inferno", "cividis", "mako", "rocket", "turbo")
+                        ),
+                        numericInput("opacity", "Opacity",
+                            value = 1, min = 0.01, max = 1, step = 0.1
+                        ),
                         prettyCheckbox("reverse", "Reverse Palette", value = FALSE)
                     )
-                )
+                ),
+                # Update plots button, centered
+                div(style = "text-align: center;", actionButton("update", "Update Plots"))
             ),
             mainPanel(
                 width = 9,
@@ -139,14 +165,14 @@ ui <- navbarPage(
                     column(
                         6,
                         h3("Male Proportions"),
-                        plotOutput("male_anatogram", width = "350px", height = "500px"),
+                        plotOutput("male_anatogram", width = "320px", height = "450px"),
                         br(),
                         div(DTOutput("male_props"), style = "font-size:70%;")
                     ),
                     column(
                         6,
                         h3("Female Proportions"),
-                        plotOutput("female_anatogram", width = "350px", height = "500px"),
+                        plotOutput("female_anatogram", width = "320px", height = "450px"),
                         br(),
                         div(DTOutput("female_props"), style = "font-size:70%;")
                     )
@@ -187,82 +213,112 @@ server <- function(input, output) {
                 dom = "Blfrtip",
                 buttons = c("copy", "csv", "excel", "pdf", "print")
             )
-        ) %>% formatStyle(0, target = "row", lineHeight = "50%")
+        ) %>%
+            formatStyle(0, target = "row", lineHeight = "50%") %>%
+            formatRound(c("value", "CI_lower", "CI_upper"), 4)
     })
 
     male_data <- reactive({
+        input$update
+
         make_plot_data(prop_data,
-            celltype = input$cell_type,
+            celltype = isolate(input$cell_type),
             male_organ_map = male_organ_list,
             female_organ_map = female_organ_list,
-            age = input$age,
-            ethnicity = input$ethnicity,
+            tissue_groups = isolate(input$tissue_groups),
+            age = isolate(input$age),
+            ethnicity = isolate(input$ethnicity),
             sex = "male"
         )
     })
 
     female_data <- reactive({
+        input$update
+
         make_plot_data(prop_data,
-            celltype = input$cell_type,
+            celltype = isolate(input$cell_type),
             male_organ_map = male_organ_list,
             female_organ_map = female_organ_list,
-            age = input$age,
-            ethnicity = input$ethnicity,
+            tissue_groups = isolate(input$tissue_groups),
+            age = isolate(input$age),
+            ethnicity = isolate(input$ethnicity),
             sex = "female"
         )
     })
 
     output$male_anatogram <- renderPlot({
-        direc <- ifelse(input$reverse, -1, 1)
+        direc <- ifelse(isolate(input$reverse), -1, 1)
 
         p <- gganatogram(
             data = male_data(), sex = "male", fill = "value",
-            organism = "human", outline = input$outline,
-            fillOutline = input$outline_colour,
+            organism = "human", outline = isolate(input$outline),
+            fillOutline = isolate(input$outline_colour),
         ) + theme_void()
 
-        p + scale_fill_viridis(option = input$palette, alpha = input$opacity, direction = direc)
+        p + scale_fill_viridis(
+            option = isolate(input$palette),
+            alpha = isolate(input$opacity), direction = direc
+        )
     })
 
-    output$male_props <- renderDT({
-        datatable(male_data(),
-            rownames = FALSE,
-            filter = "top",
-            extensions = c("Buttons"),
-            options = list(
-                search = list(regex = TRUE),
-                pageLength = 10,
-                dom = "Blfrtip",
-                buttons = c("copy", "csv", "excel", "pdf", "print")
-            )
-        ) %>% formatStyle(0, target = "row", lineHeight = "50%")
-    })
+    output$male_props <- renderDT(
+        {
+            input$update
+
+            datatable(isolate(male_data()),
+                rownames = FALSE,
+                filter = "top",
+                extensions = c("Buttons"),
+                options = list(
+                    search = list(regex = TRUE),
+                    pageLength = 10,
+                    dom = "Blfrtip",
+                    buttons = c("copy", "csv", "excel", "pdf", "print"),
+                    autoWidth = FALSE,
+                    columnDefs = list(list(width = "30%", targets = 1))
+                )
+            ) %>%
+                formatStyle(0, target = "row", lineHeight = "50%") %>%
+                formatRound(c("value", "CI_lower", "CI_upper"), 4)
+        }
+    )
 
     output$female_anatogram <- renderPlot({
-        direc <- ifelse(input$reverse, -1, 1)
+        direc <- ifelse(isolate(input$reverse), -1, 1)
 
         p <- gganatogram(
             data = female_data(), sex = "female", fill = "value",
-            organism = "human", outline = input$outline,
-            fillOutline = input$outline_colour,
+            organism = "human", outline = isolate(input$outline),
+            fillOutline = isolate(input$outline_colour),
         ) + theme_void()
 
-        p + scale_fill_viridis(option = input$palette, alpha = input$opacity, direction = direc)
+        p + scale_fill_viridis(
+            option = isolate(input$palette),
+            alpha = isolate(input$opacity), direction = direc
+        )
     })
 
-    output$female_props <- renderDT({
-        datatable(female_data(),
-            rownames = FALSE,
-            filter = "top",
-            extensions = c("Buttons"),
-            options = list(
-                search = list(regex = TRUE),
-                pageLength = 10,
-                dom = "Blfrtip",
-                buttons = c("copy", "csv", "excel", "pdf", "print")
-            )
-        ) %>% formatStyle(0, target = "row", lineHeight = "50%")
-    })
+    output$female_props <- renderDT(
+        {
+            input$update
+
+            datatable(isolate(female_data()),
+                rownames = FALSE,
+                filter = "top",
+                extensions = c("Buttons"),
+                options = list(
+                    search = list(regex = TRUE),
+                    pageLength = 10,
+                    dom = "Blfrtip",
+                    buttons = c("copy", "csv", "excel", "pdf", "print"),
+                    autoWidth = FALSE,
+                    columnDefs = list(list(width = "30%", targets = 1))
+                )
+            ) %>%
+                formatStyle(0, target = "row", lineHeight = "50%") %>%
+                formatRound(c("value", "CI_lower", "CI_upper"), 4)
+        }
+    )
 }
 
 shinyApp(ui = ui, server = server)
