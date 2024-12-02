@@ -120,11 +120,13 @@ ui <- navbarPage(
                     choices = unique(prop_data$cell_type_unified_ensemble)
                 ),
                 selectInput("ethnicity", "Ethnicity",
-                    choices = unique(prop_data$ethnicity_groups)
+                    choices = unique(prop_data$ethnicity_groups),
+                    selected = "European"
                 ),
                 sliderTextInput("age", "Age",
                     choices = c("Infancy", "Childhood", "Adolescence", "Young Adulthood", "Middle Age", "Senior"),
-                    grid = TRUE
+                    grid = TRUE, 
+                    selected = "Adolescence"
                 ),
                 pickerInput("tissue_groups", "Tissue Groups",
                     choices = unique(prop_data$tissue_groups),
@@ -151,7 +153,7 @@ ui <- navbarPage(
                             choices = c("viridis", "magma", "plasma", "inferno", "cividis", "mako", "rocket", "turbo")
                         ),
                         numericInput("opacity", "Opacity",
-                            value = 1, min = 0.01, max = 1, step = 0.1
+                            value = 0.51, min = 0.01, max = 1, step = 0.1
                         ),
                         prettyCheckbox("reverse", "Reverse Palette", value = FALSE)
                     )
