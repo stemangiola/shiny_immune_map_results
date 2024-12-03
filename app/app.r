@@ -248,6 +248,10 @@ server <- function(input, output) {
         )
     })
 
+    max_val <- reactive({
+        max(female_data()$value, male_data()$value, na.rm = TRUE)
+    })
+
     output$male_anatogram <- renderPlot({
         direc <- ifelse(isolate(input$reverse), -1, 1)
 
@@ -259,7 +263,9 @@ server <- function(input, output) {
 
         p + scale_fill_viridis(
             option = isolate(input$palette),
-            alpha = isolate(input$opacity), direction = direc
+            alpha = isolate(input$opacity),
+            direction = direc,
+            limits = c(0, max_val())
         )
     })
 
@@ -296,7 +302,9 @@ server <- function(input, output) {
 
         p + scale_fill_viridis(
             option = isolate(input$palette),
-            alpha = isolate(input$opacity), direction = direc
+            alpha = isolate(input$opacity),
+            direction = direc,
+            limits = c(0, max_val())
         )
     })
 
