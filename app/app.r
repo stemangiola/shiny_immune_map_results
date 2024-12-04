@@ -5,6 +5,7 @@ library(shinyWidgets)
 library(DT)
 library(viridis)
 library(colourpicker)
+library(svglite)
 
 # Factors for easier table filtering
 prop_data <- readRDS("cell_proportion_for_shiny_app.rds")
@@ -110,6 +111,18 @@ make_plot_data <- function(data, celltype, male_organ_map, female_organ_map, tis
 
 ui <- navbarPage(
     "Immune Proportion Map",
+    header = tags$head(
+        # Note the wrapping of the string in HTML()
+        tags$style(HTML("
+        hr {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        h3 {
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }"))
+    ),
     tabPanel(
         "Immune Proportions",
         sidebarLayout(
@@ -146,6 +159,9 @@ ui <- navbarPage(
                         6,
                         colourInput("outline_colour", "Outline Colour", value = "lightgray"),
                         prettyCheckbox("outline", "Plot Outline", value = TRUE),
+                        selectInput("dl_type", "Download Format",
+                            choices = c(".png", ".pdf", ".svg")
+                        )
                     ),
                     column(
                         6,
@@ -168,14 +184,16 @@ ui <- navbarPage(
                         6,
                         h3("Male Proportions"),
                         plotOutput("male_anatogram", width = "320px", height = "450px"),
-                        br(),
+                        downloadButton('male_dl', 'Download Plot'),
+                        hr(),
                         div(DTOutput("male_props"), style = "font-size:70%;")
                     ),
                     column(
                         6,
                         h3("Female Proportions"),
                         plotOutput("female_anatogram", width = "320px", height = "450px"),
-                        br(),
+                        downloadButton('female_dl', 'Download Plot'),
+                        hr(),
                         div(DTOutput("female_props"), style = "font-size:70%;")
                     )
                 )
@@ -252,7 +270,7 @@ server <- function(input, output) {
         max(female_data()$value, male_data()$value, na.rm = TRUE)
     })
 
-    output$male_anatogram <- renderPlot({
+    male_plot <- reactive({
         direc <- ifelse(isolate(input$reverse), -1, 1)
 
         p <- gganatogram(
@@ -268,6 +286,17 @@ server <- function(input, output) {
             limits = c(0, max_val())
         )
     })
+
+    output$male_anatogram <- renderPlot({
+        male_plot()
+    })
+
+    output$male_dl <- downloadHandler(
+        filename = function() { paste0("male_anatogram", isolate(input$dl_type)) },
+        content = function(file) {
+            ggsave(file, male_plot(), width = 6)
+        }
+    )
 
     output$male_props <- renderDT(
         {
@@ -291,7 +320,7 @@ server <- function(input, output) {
         }
     )
 
-    output$female_anatogram <- renderPlot({
+    female_plot <- reactive({
         direc <- ifelse(isolate(input$reverse), -1, 1)
 
         p <- gganatogram(
@@ -307,6 +336,17 @@ server <- function(input, output) {
             limits = c(0, max_val())
         )
     })
+
+    output$female_anatogram <- renderPlot({
+        female_plot()
+    })
+
+    output$female_dl <- downloadHandler(
+        filename = function() { paste0("female_anatogram", isolate(input$dl_type)) },
+        content = function(file) {
+            ggsave(file, female_plot(), width = 6)
+        }
+    )
 
     output$female_props <- renderDT(
         {
