@@ -127,19 +127,19 @@ ui <- navbarPage(
             sidebarPanel(
                 width = 3,
                 h4("Data Selection"),
-                selectInput("cell_type", "Cell Type",
+                selectInput("t1_cell_type", "Cell Type",
                     choices = unique(prop_data$cell_type_unified_ensemble)
                 ),
-                selectInput("ethnicity", "Ethnicity",
+                selectInput("t1_ethnicity", "Ethnicity",
                     choices = unique(prop_data$ethnicity_groups),
                     selected = "European"
                 ),
-                sliderTextInput("age", "Age",
+                sliderTextInput("t1_age", "Age",
                     choices = c("Infancy", "Childhood", "Adolescence", "Young Adulthood", "Middle Age", "Senior"),
-                    grid = TRUE, 
+                    grid = TRUE,
                     selected = "Adolescence"
                 ),
-                pickerInput("tissue_groups", "Tissue Groups",
+                pickerInput("t1_tissue_groups", "Tissue Groups",
                     choices = unique(prop_data$tissue_groups),
                     multiple = TRUE,
                     selected = unique(prop_data$tissue_groups),
@@ -154,24 +154,24 @@ ui <- navbarPage(
                 fluidRow(
                     column(
                         6,
-                        colourInput("outline_colour", "Outline Colour", value = "lightgray"),
-                        prettyCheckbox("outline", "Plot Outline", value = TRUE),
-                        selectInput("dl_type", "Download Format",
+                        colourInput("t1_outline_colour", "Outline Colour", value = "lightgray"),
+                        prettyCheckbox("t1_outline", "Plot Outline", value = TRUE),
+                        selectInput("t1_dl_type", "Download Format",
                             choices = c(".png", ".pdf", ".svg")
                         )
                     ),
                     column(
                         6,
-                        selectInput("palette", "Palette",
+                        selectInput("t1_palette", "Palette",
                             choices = c("viridis", "magma", "plasma", "inferno", "cividis", "mako", "rocket", "turbo")
                         ),
-                        numericInput("opacity", "Opacity",
+                        numericInput("t1_opacity", "Opacity",
                             value = 0.51, min = 0.01, max = 1, step = 0.1
                         ),
-                        prettyCheckbox("reverse", "Reverse Palette", value = FALSE)
+                        prettyCheckbox("t1_reverse", "Reverse Palette", value = FALSE)
                     )
                 ),
-                div(style = "text-align: center;", actionButton("update", "Update Plots"))
+                div(style = "text-align: center;", actionButton("t1_update", "Update Plots"))
             ),
             mainPanel(
                 width = 9,
@@ -179,18 +179,18 @@ ui <- navbarPage(
                     column(
                         6,
                         h3("Male Proportions"),
-                        plotOutput("male_anatogram", width = "320px", height = "450px"),
-                        downloadButton('male_dl', 'Download Plot'),
+                        plotOutput("t1_male_anatogram", width = "320px", height = "450px"),
+                        downloadButton("t1_male_dl", "Download Plot"),
                         hr(),
-                        div(DTOutput("male_props"), style = "font-size:70%;")
+                        div(DTOutput("t1_male_props"), style = "font-size:70%;")
                     ),
                     column(
                         6,
                         h3("Female Proportions"),
-                        plotOutput("female_anatogram", width = "320px", height = "450px"),
-                        downloadButton('female_dl', 'Download Plot'),
+                        plotOutput("t1_female_anatogram", width = "320px", height = "450px"),
+                        downloadButton("t1_female_dl", "Download Plot"),
                         hr(),
-                        div(DTOutput("female_props"), style = "font-size:70%;")
+                        div(DTOutput("t1_female_props"), style = "font-size:70%;")
                     )
                 )
             )
@@ -234,71 +234,71 @@ server <- function(input, output) {
             formatRound(c("value", "CI_lower", "CI_upper"), 4)
     })
 
-    male_data <- reactive({
-        input$update
+    t1_male_data <- reactive({
+        input$t1_update
 
         make_plot_data(prop_data,
-            celltype = isolate(input$cell_type),
+            celltype = isolate(input$t1_cell_type),
             male_organ_map = male_organ_list,
             female_organ_map = female_organ_list,
-            tissue_groups = isolate(input$tissue_groups),
-            age = isolate(input$age),
-            ethnicity = isolate(input$ethnicity),
+            tissue_groups = isolate(input$t1_tissue_groups),
+            age = isolate(input$t1_age),
+            ethnicity = isolate(input$t1_ethnicity),
             sex = "male"
         )
     })
 
-    female_data <- reactive({
-        input$update
+    t1_female_data <- reactive({
+        input$t1_update
 
         make_plot_data(prop_data,
-            celltype = isolate(input$cell_type),
+            celltype = isolate(input$t1_cell_type),
             male_organ_map = male_organ_list,
             female_organ_map = female_organ_list,
-            tissue_groups = isolate(input$tissue_groups),
-            age = isolate(input$age),
-            ethnicity = isolate(input$ethnicity),
+            tissue_groups = isolate(input$t1_tissue_groups),
+            age = isolate(input$t1_age),
+            ethnicity = isolate(input$t1_ethnicity),
             sex = "female"
         )
     })
 
-    max_val <- reactive({
-        max(female_data()$value, male_data()$value, na.rm = TRUE)
+    t1_max_val <- reactive({
+        max(t1_female_data()$value, t1_male_data()$value, na.rm = TRUE)
     })
 
-    male_plot <- reactive({
-        direc <- ifelse(isolate(input$reverse), -1, 1)
+    t1_male_plot <- reactive({
+        direc <- ifelse(isolate(input$t1_reverse), -1, 1)
 
         p <- gganatogram(
-            data = male_data(), sex = "male", fill = "value",
-            organism = "human", outline = isolate(input$outline),
-            fillOutline = isolate(input$outline_colour),
+            data = t1_male_data(), sex = "male", fill = "value",
+            organism = "human", outline = isolate(input$t1_outline),
+            fillOutline = isolate(input$t1_outline_colour),
         ) + theme_void()
 
         p + scale_fill_viridis(
-            option = isolate(input$palette),
-            alpha = isolate(input$opacity),
+            option = isolate(input$t1_palette),
+            alpha = isolate(input$t1_opacity),
             direction = direc,
-            limits = c(0, max_val())
+            limits = c(0, t1_max_val())
         )
     })
 
-    output$male_anatogram <- renderPlot({
-        male_plot()
+    output$t1_male_anatogram <- renderPlot({
+        t1_male_plot()
     })
 
-    output$male_dl <- downloadHandler(
-        filename = function() { paste0("male_anatogram", isolate(input$dl_type)) },
+    output$t1_male_dl <- downloadHandler(
+        filename = function() { paste0("male_anatogram", isolate(input$t1_dl_type)) },
         content = function(file) {
-            ggsave(file, male_plot(), width = 6)
+            ggsave(file, t1_male_plot(), width = 6)
         }
     )
 
-    output$male_props <- renderDT(
+    output$t1_male_props <- renderDT(
         {
             input$update
 
-            datatable(isolate(male_data()),
+            datatable(isolate(t1_male_data()),
                 rownames = FALSE,
                 filter = "top",
                 extensions = c("Buttons"),
@@ -316,39 +316,39 @@ server <- function(input, output) {
         }
     )
 
-    female_plot <- reactive({
-        direc <- ifelse(isolate(input$reverse), -1, 1)
+    t1_female_plot <- reactive({
+        direc <- ifelse(isolate(input$t1_reverse), -1, 1)
 
         p <- gganatogram(
-            data = female_data(), sex = "female", fill = "value",
-            organism = "human", outline = isolate(input$outline),
-            fillOutline = isolate(input$outline_colour),
+            data = t1_female_data(), sex = "female", fill = "value",
+            organism = "human", outline = isolate(input$t1_outline),
+            fillOutline = isolate(input$t1_outline_colour),
         ) + theme_void()
 
         p + scale_fill_viridis(
-            option = isolate(input$palette),
-            alpha = isolate(input$opacity),
+            option = isolate(input$t1_palette),
+            alpha = isolate(input$t1_opacity),
             direction = direc,
-            limits = c(0, max_val())
+            limits = c(0, t1_max_val())
         )
     })
 
-    output$female_anatogram <- renderPlot({
-        female_plot()
+    output$t1_female_anatogram <- renderPlot({
+        t1_female_plot()
     })
 
-    output$female_dl <- downloadHandler(
-        filename = function() { paste0("female_anatogram", isolate(input$dl_type)) },
+    output$t1_female_dl <- downloadHandler(
+        filename = function() { paste0("female_anatogram", isolate(input$t1_dl_type)) },
         content = function(file) {
-            ggsave(file, female_plot(), width = 6)
+            ggsave(file, t1_female_plot(), width = 6)
         }
     )
 
-    output$female_props <- renderDT(
+    output$t1_female_props <- renderDT(
         {
             input$update
 
-            datatable(isolate(female_data()),
+            datatable(isolate(t1_female_data()),
                 rownames = FALSE,
                 filter = "top",
                 extensions = c("Buttons"),
