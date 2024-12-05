@@ -17,7 +17,6 @@ prop_data$tissue_groups <- factor(prop_data$tissue_groups)
 # Need to connect tissue_groups with appropriate anatomical organs
 male_organ_list <- list(
     "blood" = c("leukocyte"),
-    # "epithelium and mucosal tissues" = c("nose", "pleura", "endometrium", "throat", "nasal_pharynx", "nasal_septum", "esophagus"),
     "epithelium and mucosal tissues" = c("pleura"),
     "large intestine" = c("caecum", "rectum", "colon"),
     "respiratory system" = c("lung", "bronchus", "pulmonary_valve", "diaphragm"),
@@ -43,7 +42,6 @@ male_organ_list <- list(
 
 female_organ_list <- list(
     "blood" = c("leukocyte"),
-    # "epithelium and mucosal tissues" = c("nose", "pleura", "endometrium", "throat", "nasal_pharynx", "nasal_septum", "esophagus"),
     "epithelium and mucosal tissues" = c("pleura"),
     "large intestine" = c("caecum", "rectum", "colon"),
     "respiratory system" = c("lung", "bronchus", "pulmonary_valve", "diaphragm"),
@@ -124,7 +122,7 @@ ui <- navbarPage(
         }"))
     ),
     tabPanel(
-        "Immune Proportions",
+        "Proportions by Sex",
         sidebarLayout(
             sidebarPanel(
                 width = 3,
@@ -151,7 +149,6 @@ ui <- navbarPage(
                         selectedTextFormat = "count > 3"
                     )
                 ),
-                # selectInput("age", "Age", choices = unique(prop_data$age_bin_sex_specific))
                 hr(),
                 h4("Plot Aesthetics"),
                 fluidRow(
@@ -174,7 +171,6 @@ ui <- navbarPage(
                         prettyCheckbox("reverse", "Reverse Palette", value = FALSE)
                     )
                 ),
-                # Update plots button, centered
                 div(style = "text-align: center;", actionButton("update", "Update Plots"))
             ),
             mainPanel(
