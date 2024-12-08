@@ -122,7 +122,7 @@ ui <- navbarPage(
         }"))
     ),
     tabPanel(
-        "Proportions by Sex",
+        "Comparisons by Sex",
         sidebarLayout(
             sidebarPanel(
                 width = 3,
@@ -197,6 +197,115 @@ ui <- navbarPage(
         )
     ),
     tabPanel(
+        "Comparisons by Age",
+        sidebarLayout(
+            sidebarPanel(
+                width = 3,
+                h4("Data Selection"),
+                selectInput("t2_cell_type", "Cell Type",
+                    choices = unique(prop_data$cell_type_unified_ensemble)
+                ),
+                selectInput("t2_ethnicity", "Ethnicity",
+                    choices = unique(prop_data$ethnicity_groups),
+                    selected = "European"
+                ),
+                pickerInput("t2_tissue_groups", "Tissue Groups",
+                    choices = unique(prop_data$tissue_groups),
+                    multiple = TRUE,
+                    selected = unique(prop_data$tissue_groups),
+                    options = pickerOptions(
+                        actionsBox = TRUE,
+                        size = 10,
+                        selectedTextFormat = "count > 3"
+                    )
+                ),
+                radioGroupButtons(
+                    inputId = "t2_sex",
+                    label = "Sex",
+                    choices = c("male", "female")
+                ),
+                hr(),
+                h4("Plot Aesthetics"),
+                fluidRow(
+                    column(
+                        6,
+                        colourInput("t2_outline_colour", "Outline Colour", value = "lightgray"),
+                        prettyCheckbox("t2_outline", "Plot Outline", value = TRUE),
+                        selectInput("t2_dl_type", "Download Format",
+                            choices = c(".png", ".pdf", ".svg")
+                        )
+                    ),
+                    column(
+                        6,
+                        selectInput("t2_palette", "Palette",
+                            choices = c("viridis", "magma", "plasma", "inferno", "cividis", "mako", "rocket", "turbo")
+                        ),
+                        numericInput("t2_opacity", "Opacity",
+                            value = 0.51, min = 0.01, max = 1, step = 0.1
+                        ),
+                        prettyCheckbox("t2_reverse", "Reverse Palette", value = FALSE)
+                    )
+                ),
+                div(style = "text-align: center;", actionButton("t2_update", "Update Plots"))
+            ),
+            mainPanel(
+                width = 9,
+                fluidRow(
+                    column(
+                        4,
+                        h3("Infancy Proportions"),
+                        plotOutput("t2_infancy_anatogram", width = "320px", height = "450px"),
+                        downloadButton("t2_infancy_dl", "Download Plot"),
+                        hr(),
+                        div(DTOutput("t2_infancy_props"), style = "font-size:70%;")
+                    ),
+                    column(
+                        4,
+                        h3("Childhood Proportions"),
+                        plotOutput("t2_childhood_anatogram", width = "320px", height = "450px"),
+                        downloadButton("t2_childhood_dl", "Download Plot"),
+                        hr(),
+                        div(DTOutput("t2_childhood_props"), style = "font-size:70%;")
+                    ),
+                    column(
+                        4,
+                        h3("Adolescence Proportions"),
+                        plotOutput("t2_adolescence_anatogram", width = "320px", height = "450px"),
+                        downloadButton("t2_adolescence_dl", "Download Plot"),
+                        hr(),
+                        div(DTOutput("t2_adolescence_props"), style = "font-size:70%;")
+                    ),
+                ),
+                fluidRow(
+                    column(
+                        4,
+                        h3("Young Adulthood Proportions"),
+                        plotOutput("t2_ya_anatogram", width = "320px", height = "450px"),
+                        downloadButton("t2_ya_dl", "Download Plot"),
+                        hr(),
+                        div(DTOutput("t2_ya_props"), style = "font-size:70%;")
+                    ),
+                    column(
+                        4,
+                        h3("Middle Age Proportions"),
+                        plotOutput("t2_middleage_anatogram", width = "320px", height = "450px"),
+                        downloadButton("t2_middleage_dl", "Download Plot"),
+                        hr(),
+                        div(DTOutput("t2_middleage_props"), style = "font-size:70%;")
+                    ),
+                    column(
+                        4,
+                        h3("Senior Proportions"),
+                        plotOutput("t2_senior_anatogram", width = "320px", height = "450px"),
+                        downloadButton("t2_senior_dl", "Download Plot"),
+                        hr(),
+                        div(DTOutput("t2_senior_props"), style = "font-size:70%;")
+                    ),
+                )
+            )
+        )
+    ),
+    tabPanel(
         "Immune Proportions Table",
         br(),
         div(DTOutput("full_data"), style = "font-size:70%;")
@@ -231,8 +340,10 @@ server <- function(input, output) {
             )
         ) %>%
             formatStyle(0, target = "row", lineHeight = "50%") %>%
-            formatRound(c("value", "CI_lower", "CI_upper"), 4)
+            formatRound(c("proportion_mean", "proportion_lower", "proportion_upper"), 4)
     })
+
+    # Comparisons by Sex Tab
 
     t1_male_data <- reactive({
         input$t1_update
@@ -288,33 +399,33 @@ server <- function(input, output) {
     })
 
     output$t1_male_dl <- downloadHandler(
-        filename = function() { paste0("male_anatogram", isolate(input$t1_dl_type)) },
+        filename = function() {
+            paste0("male_anatogram", isolate(input$t1_dl_type))
+        },
         content = function(file) {
             ggsave(file, t1_male_plot(), width = 6)
         }
     )
 
-    output$t1_male_props <- renderDT(
-        {
-            input$update
+    output$t1_male_props <- renderDT({
+        input$t1_update
 
-            datatable(isolate(t1_male_data()),
-                rownames = FALSE,
-                filter = "top",
-                extensions = c("Buttons"),
-                options = list(
-                    search = list(regex = TRUE),
-                    pageLength = 10,
-                    dom = "Blfrtip",
-                    buttons = c("copy", "csv", "excel", "pdf", "print"),
-                    autoWidth = FALSE,
-                    columnDefs = list(list(width = "30%", targets = 1))
-                )
-            ) %>%
-                formatStyle(0, target = "row", lineHeight = "50%") %>%
-                formatRound(c("value", "CI_lower", "CI_upper"), 4)
-        }
-    )
+        datatable(isolate(t1_male_data()),
+            rownames = FALSE,
+            filter = "top",
+            extensions = c("Buttons"),
+            options = list(
+                search = list(regex = TRUE),
+                pageLength = 10,
+                dom = "Blfrtip",
+                buttons = c("copy", "csv", "excel", "pdf", "print"),
+                autoWidth = FALSE,
+                columnDefs = list(list(width = "30%", targets = 1))
+            )
+        ) %>%
+            formatStyle(0, target = "row", lineHeight = "50%") %>%
+            formatRound(c("value", "CI_lower", "CI_upper"), 4)
+    })
 
     t1_female_plot <- reactive({
         direc <- ifelse(isolate(input$t1_reverse), -1, 1)
@@ -338,33 +449,515 @@ server <- function(input, output) {
     })
 
     output$t1_female_dl <- downloadHandler(
-        filename = function() { paste0("female_anatogram", isolate(input$t1_dl_type)) },
+        filename = function() {
+            paste0("female_anatogram", isolate(input$t1_dl_type))
+        },
         content = function(file) {
             ggsave(file, t1_female_plot(), width = 6)
         }
     )
 
-    output$t1_female_props <- renderDT(
-        {
-            input$update
+    output$t1_female_props <- renderDT({
+        input$t1_update
 
-            datatable(isolate(t1_female_data()),
-                rownames = FALSE,
-                filter = "top",
-                extensions = c("Buttons"),
-                options = list(
-                    search = list(regex = TRUE),
-                    pageLength = 10,
-                    dom = "Blfrtip",
-                    buttons = c("copy", "csv", "excel", "pdf", "print"),
-                    autoWidth = FALSE,
-                    columnDefs = list(list(width = "30%", targets = 1))
+        datatable(isolate(t1_female_data()),
+            rownames = FALSE,
+            filter = "top",
+            extensions = c("Buttons"),
+            options = list(
+                search = list(regex = TRUE),
+                pageLength = 10,
+                dom = "Blfrtip",
+                buttons = c("copy", "csv", "excel", "pdf", "print"),
+                autoWidth = FALSE,
+                columnDefs = list(list(width = "30%", targets = 1))
+            )
+        ) %>%
+            formatStyle(0, target = "row", lineHeight = "50%") %>%
+            formatRound(c("value", "CI_lower", "CI_upper"), 4)
+    })
+
+    # Comparisons by Age Tab
+
+    t2_data <- reactive({
+        input$t2_update
+
+        infancy <- make_plot_data(prop_data,
+            celltype = isolate(input$t2_cell_type),
+            male_organ_map = male_organ_list,
+            female_organ_map = female_organ_list,
+            tissue_groups = isolate(input$t2_tissue_groups),
+            age = "Infancy",
+            ethnicity = isolate(input$t2_ethnicity),
+            sex = isolate(input$t2_sex)
+        )
+
+        childhood <- make_plot_data(prop_data,
+            celltype = isolate(input$t2_cell_type),
+            male_organ_map = male_organ_list,
+            female_organ_map = female_organ_list,
+            tissue_groups = isolate(input$t2_tissue_groups),
+            age = "Childhood",
+            ethnicity = isolate(input$t2_ethnicity),
+            sex = isolate(input$t2_sex)
+        )
+
+        adolescence <- make_plot_data(prop_data,
+            celltype = isolate(input$t2_cell_type),
+            male_organ_map = male_organ_list,
+            female_organ_map = female_organ_list,
+            tissue_groups = isolate(input$t2_tissue_groups),
+            age = "Adolescence",
+            ethnicity = isolate(input$t2_ethnicity),
+            sex = isolate(input$t2_sex)
+        )
+
+        ya <- make_plot_data(prop_data,
+            celltype = isolate(input$t2_cell_type),
+            male_organ_map = male_organ_list,
+            female_organ_map = female_organ_list,
+            tissue_groups = isolate(input$t2_tissue_groups),
+            age = "Young Adulthood",
+            ethnicity = isolate(input$t2_ethnicity),
+            sex = isolate(input$t2_sex)
+        )
+
+        middleage <- make_plot_data(prop_data,
+            celltype = isolate(input$t2_cell_type),
+            male_organ_map = male_organ_list,
+            female_organ_map = female_organ_list,
+            tissue_groups = isolate(input$t2_tissue_groups),
+            age = "Middle Age",
+            ethnicity = isolate(input$t2_ethnicity),
+            sex = isolate(input$t2_sex)
+        )
+
+        senior <- make_plot_data(prop_data,
+            celltype = isolate(input$t2_cell_type),
+            male_organ_map = male_organ_list,
+            female_organ_map = female_organ_list,
+            tissue_groups = isolate(input$t2_tissue_groups),
+            age = "Senior",
+            ethnicity = isolate(input$t2_ethnicity),
+            sex = isolate(input$t2_sex)
+        )
+
+        list(
+            infancy = infancy,
+            childhood = childhood,
+            adolescence = adolescence,
+            ya = ya,
+            middleage = middleage,
+            senior = senior
+        )
+    })
+
+    t2_max_val <- reactive({
+        max(t2_data()$infancy$value,
+        t2_data()$childhood$value,
+        t2_data()$adolescence$value,
+        t2_data()$ya$value,
+        t2_data()$middleage$value,
+        t2_data()$senior$value, na.rm = TRUE)
+    })
+
+    t2_infancy_plot <- reactive({
+        direc <- ifelse(isolate(input$t2_reverse), -1, 1)
+
+        pdata <- t2_data()$infancy
+
+        if (is.null(pdata) || nrow(pdata) == 0) {
+            p <- ggplot() +
+                theme_void() +
+                theme(plot.margin = margin(1, 1, 1, 1, "cm")) +
+                geom_text(aes(x = 0.5, y = 0.5, label = "No results."),
+                    inherit.aes = FALSE, check_overlap = TRUE
                 )
-            ) %>%
-                formatStyle(0, target = "row", lineHeight = "50%") %>%
-                formatRound(c("value", "CI_lower", "CI_upper"), 4)
+        } else {
+            p <- gganatogram(
+                data = pdata, sex = isolate(input$t2_sex), fill = "value",
+                organism = "human", outline = isolate(input$t2_outline),
+                fillOutline = isolate(input$t2_outline_colour),
+            ) + theme_void()
+
+            p <- p + scale_fill_viridis(
+                option = isolate(input$t2_palette),
+                alpha = isolate(input$t2_opacity),
+                direction = direc,
+                limits = c(0, t2_max_val())
+            )
+        }
+
+        p
+    })
+
+    output$t2_infancy_anatogram <- renderPlot({
+        t2_infancy_plot()
+    })
+
+    output$t2_infancy_dl <- downloadHandler(
+        filename = function() {
+            paste0("infancy_anatogram", isolate(input$t2_dl_type))
+        },
+        content = function(file) {
+            ggsave(file, t2_infancy_plot(), width = 6)
         }
     )
+
+    output$t2_infancy_props <- renderDT({
+        input$t2_update
+
+        dat <- isolate(t2_data()$infancy)
+        dat <- dat[!is.na(dat$value), ]
+
+        datatable(dat,
+            rownames = FALSE,
+            filter = "top",
+            extensions = c("Buttons"),
+            options = list(
+                search = list(regex = TRUE),
+                pageLength = 10,
+                dom = "Blfrtip",
+                buttons = c("copy", "csv", "excel", "pdf", "print"),
+                autoWidth = FALSE,
+                columnDefs = list(list(width = "30%", targets = 1))
+            )
+        ) %>%
+            formatStyle(0, target = "row", lineHeight = "50%") %>%
+            formatRound(c("value", "CI_lower", "CI_upper"), 4)
+    })
+
+    t2_childhood_plot <- reactive({
+        direc <- ifelse(isolate(input$t2_reverse), -1, 1)
+
+        pdata <- t2_data()$childhood
+
+        if (is.null(pdata) || nrow(pdata) == 0) {
+            p <- ggplot() +
+                theme_void() +
+                theme(plot.margin = margin(1, 1, 1, 1, "cm")) +
+                geom_text(aes(x = 0.5, y = 0.5, label = "No results."),
+                    inherit.aes = FALSE, check_overlap = TRUE
+                )
+        } else {
+            p <- gganatogram(
+                data = pdata, sex = isolate(input$t2_sex), fill = "value",
+                organism = "human", outline = isolate(input$t2_outline),
+                fillOutline = isolate(input$t2_outline_colour),
+            ) + theme_void()
+
+            p <- p + scale_fill_viridis(
+                option = isolate(input$t2_palette),
+                alpha = isolate(input$t2_opacity),
+                direction = direc,
+                limits = c(0, t2_max_val())
+            )
+        }
+
+        p
+    })
+
+    output$t2_childhood_anatogram <- renderPlot({
+        t2_childhood_plot()
+    })
+
+    output$t2_childhood_dl <- downloadHandler(
+        filename = function() {
+            paste0("childhood_anatogram", isolate(input$t2_dl_type))
+        },
+        content = function(file) {
+            ggsave(file, t2_childhood_plot(), width = 6)
+        }
+    )
+
+    output$t2_childhood_props <- renderDT({
+        input$t2_update
+
+        dat <- isolate(t2_data()$childhood)
+        dat <- dat[!is.na(dat$value), ]
+
+        datatable(dat,
+            rownames = FALSE,
+            filter = "top",
+            extensions = c("Buttons"),
+            options = list(
+                search = list(regex = TRUE),
+                pageLength = 10,
+                dom = "Blfrtip",
+                buttons = c("copy", "csv", "excel", "pdf", "print"),
+                autoWidth = FALSE,
+                columnDefs = list(list(width = "30%", targets = 1))
+            )
+        ) %>%
+            formatStyle(0, target = "row", lineHeight = "50%") %>%
+            formatRound(c("value", "CI_lower", "CI_upper"), 4)
+    })
+
+    t2_adolescence_plot <- reactive({
+        direc <- ifelse(isolate(input$t2_reverse), -1, 1)
+
+        pdata <- t2_data()$adolescence
+
+        if (is.null(pdata) || nrow(pdata) == 0) {
+            p <- ggplot() +
+                theme_void() +
+                theme(plot.margin = margin(1, 1, 1, 1, "cm")) +
+                geom_text(aes(x = 0.5, y = 0.5, label = "No results."),
+                    inherit.aes = FALSE, check_overlap = TRUE
+                )
+        } else {
+            p <- gganatogram(
+                data = pdata, sex = isolate(input$t2_sex), fill = "value",
+                organism = "human", outline = isolate(input$t2_outline),
+                fillOutline = isolate(input$t2_outline_colour),
+            ) + theme_void()
+
+            p <- p + scale_fill_viridis(
+                option = isolate(input$t2_palette),
+                alpha = isolate(input$t2_opacity),
+                direction = direc,
+                limits = c(0, t2_max_val())
+            )
+        }
+
+        p
+    })
+
+    output$t2_adolescence_anatogram <- renderPlot({
+        t2_adolescence_plot()
+    })
+
+    output$t2_adolescence_dl <- downloadHandler(
+        filename = function() {
+            paste0("adolescence_anatogram", isolate(input$t2_dl_type))
+        },
+        content = function(file) {
+            ggsave(file, t2_adolescence_plot(), width = 6)
+        }
+    )
+
+    output$t2_adolescence_props <- renderDT({
+        input$t2_update
+
+        dat <- isolate(t2_data()$adolescence)
+        dat <- dat[!is.na(dat$value), ]
+
+        datatable(dat,
+            rownames = FALSE,
+            filter = "top",
+            extensions = c("Buttons"),
+            options = list(
+                search = list(regex = TRUE),
+                pageLength = 10,
+                dom = "Blfrtip",
+                buttons = c("copy", "csv", "excel", "pdf", "print"),
+                autoWidth = FALSE,
+                columnDefs = list(list(width = "30%", targets = 1))
+            )
+        ) %>%
+            formatStyle(0, target = "row", lineHeight = "50%") %>%
+            formatRound(c("value", "CI_lower", "CI_upper"), 4)
+    })
+
+    t2_ya_plot <- reactive({
+        direc <- ifelse(isolate(input$t2_reverse), -1, 1)
+
+        pdata <- t2_data()$ya
+
+        if (is.null(pdata) || nrow(pdata) == 0) {
+            p <- ggplot() +
+                theme_void() +
+                theme(plot.margin = margin(1, 1, 1, 1, "cm")) +
+                geom_text(aes(x = 0.5, y = 0.5, label = "No results."),
+                    inherit.aes = FALSE, check_overlap = TRUE
+                )
+        } else {
+            p <- gganatogram(
+                data = pdata, sex = isolate(input$t2_sex), fill = "value",
+                organism = "human", outline = isolate(input$t2_outline),
+                fillOutline = isolate(input$t2_outline_colour),
+            ) + theme_void()
+
+            p <- p + scale_fill_viridis(
+                option = isolate(input$t2_palette),
+                alpha = isolate(input$t2_opacity),
+                direction = direc,
+                limits = c(0, t2_max_val())
+            )
+        }
+
+        p
+    })
+
+    output$t2_ya_anatogram <- renderPlot({
+        t2_ya_plot()
+    })
+
+    output$t2_ya_dl <- downloadHandler(
+        filename = function() {
+            paste0("ya_anatogram", isolate(input$t2_dl_type))
+        },
+        content = function(file) {
+            ggsave(file, t2_ya_plot(), width = 6)
+        }
+    )
+
+    output$t2_ya_props <- renderDT({
+        input$t2_update
+
+        dat <- isolate(t2_data()$ya)
+        dat <- dat[!is.na(dat$value), ]
+
+        datatable(dat,
+            rownames = FALSE,
+            filter = "top",
+            extensions = c("Buttons"),
+            options = list(
+                search = list(regex = TRUE),
+                pageLength = 10,
+                dom = "Blfrtip",
+                buttons = c("copy", "csv", "excel", "pdf", "print"),
+                autoWidth = FALSE,
+                columnDefs = list(list(width = "30%", targets = 1))
+            )
+        ) %>%
+            formatStyle(0, target = "row", lineHeight = "50%") %>%
+            formatRound(c("value", "CI_lower", "CI_upper"), 4)
+    })
+
+    t2_middleage_plot <- reactive({
+        direc <- ifelse(isolate(input$t2_reverse), -1, 1)
+
+        pdata <- t2_data()$middleage
+
+        if (is.null(pdata) || nrow(pdata) == 0) {
+            p <- ggplot() +
+                theme_void() +
+                theme(plot.margin = margin(1, 1, 1, 1, "cm")) +
+                geom_text(aes(x = 0.5, y = 0.5, label = "No results."),
+                    inherit.aes = FALSE, check_overlap = TRUE
+                )
+        } else {
+            p <- gganatogram(
+                data = pdata, sex = isolate(input$t2_sex), fill = "value",
+                organism = "human", outline = isolate(input$t2_outline),
+                fillOutline = isolate(input$t2_outline_colour),
+            ) + theme_void()
+
+            p <- p + scale_fill_viridis(
+                option = isolate(input$t2_palette),
+                alpha = isolate(input$t2_opacity),
+                direction = direc,
+                limits = c(0, t2_max_val())
+            )
+        }
+
+        p
+    })
+
+    output$t2_middleage_anatogram <- renderPlot({
+        t2_middleage_plot()
+    })
+
+    output$t2_middleage_dl <- downloadHandler(
+        filename = function() {
+            paste0("middleage_anatogram", isolate(input$t2_dl_type))
+        },
+        content = function(file) {
+            ggsave(file, t2_middleage_plot(), width = 6)
+        }
+    )
+
+    output$t2_middleage_props <- renderDT({
+        input$t2_update
+
+        dat <- isolate(t2_data()$middleage)
+        dat <- dat[!is.na(dat$value), ]
+
+        datatable(dat,
+            rownames = FALSE,
+            filter = "top",
+            extensions = c("Buttons"),
+            options = list(
+                search = list(regex = TRUE),
+                pageLength = 10,
+                dom = "Blfrtip",
+                buttons = c("copy", "csv", "excel", "pdf", "print"),
+                autoWidth = FALSE,
+                columnDefs = list(list(width = "30%", targets = 1))
+            )
+        ) %>%
+            formatStyle(0, target = "row", lineHeight = "50%") %>%
+            formatRound(c("value", "CI_lower", "CI_upper"), 4)
+    })
+
+    t2_senior_plot <- reactive({
+        direc <- ifelse(isolate(input$t2_reverse), -1, 1)
+
+        pdata <- t2_data()$senior
+
+        if (is.null(pdata) || nrow(pdata) == 0) {
+            p <- ggplot() +
+                theme_void() +
+                theme(plot.margin = margin(1, 1, 1, 1, "cm")) +
+                geom_text(aes(x = 0.5, y = 0.5, label = "No results."),
+                    inherit.aes = FALSE, check_overlap = TRUE
+                )
+        } else {
+            p <- gganatogram(
+                data = pdata, sex = isolate(input$t2_sex), fill = "value",
+                organism = "human", outline = isolate(input$t2_outline),
+                fillOutline = isolate(input$t2_outline_colour),
+            ) + theme_void()
+
+            p <- p + scale_fill_viridis(
+                option = isolate(input$t2_palette),
+                alpha = isolate(input$t2_opacity),
+                direction = direc,
+                limits = c(0, t2_max_val())
+            )
+        }
+
+        p
+    })
+
+    output$t2_senior_anatogram <- renderPlot({
+        t2_senior_plot()
+    })
+
+    output$t2_senior_dl <- downloadHandler(
+        filename = function() {
+            paste0("senior_anatogram", isolate(input$t2_dl_type))
+        },
+        content = function(file) {
+            ggsave(file, t2_senior_plot(), width = 6)
+        }
+    )
+
+    output$t2_senior_props <- renderDT({
+        input$t2_update
+
+        dat <- isolate(t2_data()$senior)
+        dat <- dat[!is.na(dat$value), ]
+
+        datatable(dat,
+            rownames = FALSE,
+            filter = "top",
+            extensions = c("Buttons"),
+            options = list(
+                search = list(regex = TRUE),
+                pageLength = 10,
+                dom = "Blfrtip",
+                buttons = c("copy", "csv", "excel", "pdf", "print"),
+                autoWidth = FALSE,
+                columnDefs = list(list(width = "30%", targets = 1))
+            )
+        ) %>%
+            formatStyle(0, target = "row", lineHeight = "50%") %>%
+            formatRound(c("value", "CI_lower", "CI_upper"), 4)
+    })
+
+    # Comparisons by Ethnicities Tab
 }
 
 shinyApp(ui = ui, server = server)
