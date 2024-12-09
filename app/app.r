@@ -306,6 +306,125 @@ ui <- navbarPage(
         )
     ),
     tabPanel(
+        "Comparisons by Ethnicity",
+        sidebarLayout(
+            sidebarPanel(
+                width = 3,
+                h4("Data Selection"),
+                selectInput("t3_cell_type", "Cell Type",
+                    choices = unique(prop_data$cell_type_unified_ensemble)
+                ),
+                selectInput("t3_age", "Age",
+                    choices = unique(prop_data$age_bin_sex_specific),
+                    selected = "European"
+                ),
+                pickerInput("t3_tissue_groups", "Tissue Groups",
+                    choices = unique(prop_data$tissue_groups),
+                    multiple = TRUE,
+                    selected = unique(prop_data$tissue_groups),
+                    options = pickerOptions(
+                        actionsBox = TRUE,
+                        size = 10,
+                        selectedTextFormat = "count > 3"
+                    )
+                ),
+                radioGroupButtons(
+                    inputId = "t3_sex",
+                    label = "Sex",
+                    choices = c("male", "female")
+                ),
+                hr(),
+                h4("Plot Aesthetics"),
+                fluidRow(
+                    column(
+                        6,
+                        colourInput("t3_outline_colour", "Outline Colour", value = "lightgray"),
+                        prettyCheckbox("t3_outline", "Plot Outline", value = TRUE),
+                        selectInput("t3_dl_type", "Download Format",
+                            choices = c(".png", ".pdf", ".svg")
+                        )
+                    ),
+                    column(
+                        6,
+                        selectInput("t3_palette", "Palette",
+                            choices = c("viridis", "magma", "plasma", "inferno", "cividis", "mako", "rocket", "turbo")
+                        ),
+                        numericInput("t3_opacity", "Opacity",
+                            value = 0.51, min = 0.01, max = 1, step = 0.1
+                        ),
+                        prettyCheckbox("t3_reverse", "Reverse Palette", value = FALSE)
+                    )
+                ),
+                div(style = "text-align: center;", actionButton("t3_update", "Update Plots"))
+            ),
+            mainPanel(
+                width = 9,
+                fluidRow(
+                    column(
+                        4,
+                        h3("European Proportions"),
+                        plotOutput("t3_euro_anatogram", width = "320px", height = "450px"),
+                        downloadButton("t3_euro_dl", "Download Plot"),
+                        hr(),
+                        div(DTOutput("t3_euro_props"), style = "font-size:70%;")
+                    ),
+                    column(
+                        4,
+                        h3("African Proportions"),
+                        plotOutput("t3_afri_anatogram", width = "320px", height = "450px"),
+                        downloadButton("t3_afri_dl", "Download Plot"),
+                        hr(),
+                        div(DTOutput("t3_afri_props"), style = "font-size:70%;")
+                    ),
+                    column(
+                        4,
+                        h3("East Asian Proportions"),
+                        plotOutput("t3_easian_anatogram", width = "320px", height = "450px"),
+                        downloadButton("t3_easian_dl", "Download Plot"),
+                        hr(),
+                        div(DTOutput("t3_easian_props"), style = "font-size:70%;")
+                    )
+                ),
+                fluidRow(
+                    column(
+                        4,
+                        h3("Hispanic/Latin American Proportions"),
+                        plotOutput("t3_hisp_anatogram", width = "320px", height = "450px"),
+                        downloadButton("t3_hisp_dl", "Download Plot"),
+                        hr(),
+                        div(DTOutput("t3_hisp_props"), style = "font-size:70%;")
+                    ),
+                    column(
+                        4,
+                        h3("Native American/Pacific Islander Proportions"),
+                        plotOutput("t3_napi_anatogram", width = "320px", height = "450px"),
+                        downloadButton("t3_napi_dl", "Download Plot"),
+                        hr(),
+                        div(DTOutput("t3_napi_props"), style = "font-size:70%;")
+                    ),
+                    column(
+                        4,
+                        h3("South Asian Proportions"),
+                        plotOutput("t3_sasian_anatogram", width = "320px", height = "450px"),
+                        downloadButton("t3_sasian_dl", "Download Plot"),
+                        hr(),
+                        div(DTOutput("t3_sasian_props"), style = "font-size:70%;")
+                    )
+                ),
+                fluidRow(
+                    column(
+                        4,
+                        h3("Other/Unknown Proportions"),
+                        plotOutput("t3_other_anatogram", width = "320px", height = "450px"),
+                        downloadButton("t3_other_dl", "Download Plot"),
+                        hr(),
+                        div(DTOutput("t3_other_props"), style = "font-size:70%;")
+                    )
+                )
+            )
+        )
+    ),
+    tabPanel(
         "Immune Proportions Table",
         br(),
         div(DTOutput("full_data"), style = "font-size:70%;")
@@ -958,6 +1077,561 @@ server <- function(input, output) {
     })
 
     # Comparisons by Ethnicities Tab
+    t3_data <- reactive({
+        input$t3_update
+
+        euro <- make_plot_data(prop_data,
+            celltype = isolate(input$t3_cell_type),
+            male_organ_map = male_organ_list,
+            female_organ_map = female_organ_list,
+            tissue_groups = isolate(input$t3_tissue_groups),
+            age = isolate(input$t3_age),
+            ethnicity = "European",
+            sex = isolate(input$t3_sex)
+        )
+
+        afri <- make_plot_data(prop_data,
+            celltype = isolate(input$t3_cell_type),
+            male_organ_map = male_organ_list,
+            female_organ_map = female_organ_list,
+            tissue_groups = isolate(input$t3_tissue_groups),
+            age = isolate(input$t3_age),
+            ethnicity = "African",
+            sex = isolate(input$t3_sex)
+        )
+
+        easian <- make_plot_data(prop_data,
+            celltype = isolate(input$t3_cell_type),
+            male_organ_map = male_organ_list,
+            female_organ_map = female_organ_list,
+            tissue_groups = isolate(input$t3_tissue_groups),
+            age = isolate(input$t3_age),
+            ethnicity = "East Asian",
+            sex = isolate(input$t3_sex)
+        )
+
+        hisp <- make_plot_data(prop_data,
+            celltype = isolate(input$t3_cell_type),
+            male_organ_map = male_organ_list,
+            female_organ_map = female_organ_list,
+            tissue_groups = isolate(input$t3_tissue_groups),
+            age = isolate(input$t3_age),
+            ethnicity = "Hispanic/Latin American",
+            sex = isolate(input$t3_sex)
+        )
+
+        napi <- make_plot_data(prop_data,
+            celltype = isolate(input$t3_cell_type),
+            male_organ_map = male_organ_list,
+            female_organ_map = female_organ_list,
+            tissue_groups = isolate(input$t3_tissue_groups),
+            age = isolate(input$t3_age),
+            ethnicity = "Native American & Pacific Islander",
+            sex = isolate(input$t3_sex)
+        )
+
+        other <- make_plot_data(prop_data,
+            celltype = isolate(input$t3_cell_type),
+            male_organ_map = male_organ_list,
+            female_organ_map = female_organ_list,
+            tissue_groups = isolate(input$t3_tissue_groups),
+            age = isolate(input$t3_age),
+            ethnicity = "Other/Unknown",
+            sex = isolate(input$t3_sex)
+        )
+
+        sasian <- make_plot_data(prop_data,
+            celltype = isolate(input$t3_cell_type),
+            male_organ_map = male_organ_list,
+            female_organ_map = female_organ_list,
+            tissue_groups = isolate(input$t3_tissue_groups),
+            age = isolate(input$t3_age),
+            ethnicity = "South Asian",
+            sex = isolate(input$t3_sex)
+        )
+
+        list(
+            euro = euro,
+            afri = afri,
+            easian = easian,
+            hisp = hisp,
+            napi = napi,
+            other = other,
+            sasian = sasian
+        )
+    })
+
+    t3_max_val <- reactive({
+        max(t3_data()$euro$value,
+        t3_data()$afri$value,
+        t3_data()$easian$value,
+        t3_data()$hisp$value,
+        t3_data()$napi$value,
+        t3_data()$other$value,
+        t3_data()$sasian$value, na.rm = TRUE)
+    })
+
+    t3_euro_plot <- reactive({
+        direc <- ifelse(isolate(input$t3_reverse), -1, 1)
+
+        pdata <- t3_data()$euro
+
+        if (is.null(pdata) || nrow(pdata) == 0) {
+            p <- ggplot() +
+                theme_void() +
+                theme(plot.margin = margin(1, 1, 1, 1, "cm")) +
+                geom_text(aes(x = 0.5, y = 0.5, label = "No results."),
+                    inherit.aes = FALSE, check_overlap = TRUE
+                )
+        } else {
+            p <- gganatogram(
+                data = pdata, sex = isolate(input$t3_sex), fill = "value",
+                organism = "human", outline = isolate(input$t3_outline),
+                fillOutline = isolate(input$t3_outline_colour),
+            ) + theme_void()
+
+            p <- p + scale_fill_viridis(
+                option = isolate(input$t3_palette),
+                alpha = isolate(input$t3_opacity),
+                direction = direc,
+                limits = c(0, t3_max_val())
+            )
+        }
+
+        p
+    })
+
+    output$t3_euro_anatogram <- renderPlot({
+        t3_euro_plot()
+    })
+
+    output$t3_euro_dl <- downloadHandler(
+        filename = function() {
+            paste0("euro_anatogram", isolate(input$t3_dl_type))
+        },
+        content = function(file) {
+            ggsave(file, t3_euro_plot(), width = 6)
+        }
+    )
+
+    output$t3_euro_props <- renderDT({
+        input$t3_update
+
+        dat <- isolate(t3_data()$euro)
+        dat <- dat[!is.na(dat$value), ]
+
+        datatable(dat,
+            rownames = FALSE,
+            filter = "top",
+            extensions = c("Buttons"),
+            options = list(
+                search = list(regex = TRUE),
+                pageLength = 10,
+                dom = "Blfrtip",
+                buttons = c("copy", "csv", "excel", "pdf", "print"),
+                autoWidth = FALSE,
+                columnDefs = list(list(width = "30%", targets = 1))
+            )
+        ) %>%
+            formatStyle(0, target = "row", lineHeight = "70%") %>%
+            formatRound(c("value", "CI_lower", "CI_upper"), 4)
+    })
+
+    t3_afri_plot <- reactive({
+        direc <- ifelse(isolate(input$t3_reverse), -1, 1)
+
+        pdata <- t3_data()$afri
+
+        if (is.null(pdata) || nrow(pdata) == 0) {
+            p <- ggplot() +
+                theme_void() +
+                theme(plot.margin = margin(1, 1, 1, 1, "cm")) +
+                geom_text(aes(x = 0.5, y = 0.5, label = "No results."),
+                    inherit.aes = FALSE, check_overlap = TRUE
+                )
+        } else {
+            p <- gganatogram(
+                data = pdata, sex = isolate(input$t3_sex), fill = "value",
+                organism = "human", outline = isolate(input$t3_outline),
+                fillOutline = isolate(input$t3_outline_colour),
+            ) + theme_void()
+
+            p <- p + scale_fill_viridis(
+                option = isolate(input$t3_palette),
+                alpha = isolate(input$t3_opacity),
+                direction = direc,
+                limits = c(0, t3_max_val())
+            )
+        }
+
+        p
+    })
+
+    output$t3_afri_anatogram <- renderPlot({
+        t3_afri_plot()
+    })
+
+    output$t3_afri_dl <- downloadHandler(
+        filename = function() {
+            paste0("afri_anatogram", isolate(input$t3_dl_type))
+        },
+        content = function(file) {
+            ggsave(file, t3_afri_plot(), width = 6)
+        }
+    )
+
+    output$t3_afri_props <- renderDT({
+        input$t3_update
+
+        dat <- isolate(t3_data()$afri)
+        dat <- dat[!is.na(dat$value), ]
+
+        datatable(dat,
+            rownames = FALSE,
+            filter = "top",
+            extensions = c("Buttons"),
+            options = list(
+                search = list(regex = TRUE),
+                pageLength = 10,
+                dom = "Blfrtip",
+                buttons = c("copy", "csv", "excel", "pdf", "print"),
+                autoWidth = FALSE,
+                columnDefs = list(list(width = "30%", targets = 1))
+            )
+        ) %>%
+            formatStyle(0, target = "row", lineHeight = "70%") %>%
+            formatRound(c("value", "CI_lower", "CI_upper"), 4)
+    })
+
+    t3_easian_plot <- reactive({
+        direc <- ifelse(isolate(input$t3_reverse), -1, 1)
+
+        pdata <- t3_data()$easian
+
+        if (is.null(pdata) || nrow(pdata) == 0) {
+            p <- ggplot() +
+                theme_void() +
+                theme(plot.margin = margin(1, 1, 1, 1, "cm")) +
+                geom_text(aes(x = 0.5, y = 0.5, label = "No results."),
+                    inherit.aes = FALSE, check_overlap = TRUE
+                )
+        } else {
+            p <- gganatogram(
+                data = pdata, sex = isolate(input$t3_sex), fill = "value",
+                organism = "human", outline = isolate(input$t3_outline),
+                fillOutline = isolate(input$t3_outline_colour),
+            ) + theme_void()
+
+            p <- p + scale_fill_viridis(
+                option = isolate(input$t3_palette),
+                alpha = isolate(input$t3_opacity),
+                direction = direc,
+                limits = c(0, t3_max_val())
+            )
+        }
+
+        p
+    })
+
+    output$t3_easian_anatogram <- renderPlot({
+        t3_easian_plot()
+    })
+
+    output$t3_easian_dl <- downloadHandler(
+        filename = function() {
+            paste0("east_asian_anatogram", isolate(input$t3_dl_type))
+        },
+        content = function(file) {
+            ggsave(file, t3_easian_plot(), width = 6)
+        }
+    )
+
+    output$t3_easian_props <- renderDT({
+        input$t3_update
+
+        dat <- isolate(t3_data()$easian)
+        dat <- dat[!is.na(dat$value), ]
+
+        datatable(dat,
+            rownames = FALSE,
+            filter = "top",
+            extensions = c("Buttons"),
+            options = list(
+                search = list(regex = TRUE),
+                pageLength = 10,
+                dom = "Blfrtip",
+                buttons = c("copy", "csv", "excel", "pdf", "print"),
+                autoWidth = FALSE,
+                columnDefs = list(list(width = "30%", targets = 1))
+            )
+        ) %>%
+            formatStyle(0, target = "row", lineHeight = "70%") %>%
+            formatRound(c("value", "CI_lower", "CI_upper"), 4)
+    })
+
+    t3_hisp_plot <- reactive({
+        direc <- ifelse(isolate(input$t3_reverse), -1, 1)
+
+        pdata <- t3_data()$hisp
+
+        if (is.null(pdata) || nrow(pdata) == 0) {
+            p <- ggplot() +
+                theme_void() +
+                theme(plot.margin = margin(1, 1, 1, 1, "cm")) +
+                geom_text(aes(x = 0.5, y = 0.5, label = "No results."),
+                    inherit.aes = FALSE, check_overlap = TRUE
+                )
+        } else {
+            p <- gganatogram(
+                data = pdata, sex = isolate(input$t3_sex), fill = "value",
+                organism = "human", outline = isolate(input$t3_outline),
+                fillOutline = isolate(input$t3_outline_colour),
+            ) + theme_void()
+
+            p <- p + scale_fill_viridis(
+                option = isolate(input$t3_palette),
+                alpha = isolate(input$t3_opacity),
+                direction = direc,
+                limits = c(0, t3_max_val())
+            )
+        }
+
+        p
+    })
+
+    output$t3_hisp_anatogram <- renderPlot({
+        t3_hisp_plot()
+    })
+
+    output$t3_hisp_dl <- downloadHandler(
+        filename = function() {
+            paste0("hispanic_la_anatogram", isolate(input$t3_dl_type))
+        },
+        content = function(file) {
+            ggsave(file, t3_hisp_plot(), width = 6)
+        }
+    )
+
+    output$t3_hisp_props <- renderDT({
+        input$t3_update
+
+        dat <- isolate(t3_data()$hisp)
+        dat <- dat[!is.na(dat$value), ]
+
+        datatable(dat,
+            rownames = FALSE,
+            filter = "top",
+            extensions = c("Buttons"),
+            options = list(
+                search = list(regex = TRUE),
+                pageLength = 10,
+                dom = "Blfrtip",
+                buttons = c("copy", "csv", "excel", "pdf", "print"),
+                autoWidth = FALSE,
+                columnDefs = list(list(width = "30%", targets = 1))
+            )
+        ) %>%
+            formatStyle(0, target = "row", lineHeight = "70%") %>%
+            formatRound(c("value", "CI_lower", "CI_upper"), 4)
+    })
+
+    t3_napi_plot <- reactive({
+        direc <- ifelse(isolate(input$t3_reverse), -1, 1)
+
+        pdata <- t3_data()$napi
+
+        if (is.null(pdata) || nrow(pdata) == 0) {
+            p <- ggplot() +
+                theme_void() +
+                theme(plot.margin = margin(1, 1, 1, 1, "cm")) +
+                geom_text(aes(x = 0.5, y = 0.5, label = "No results."),
+                    inherit.aes = FALSE, check_overlap = TRUE
+                )
+        } else {
+            p <- gganatogram(
+                data = pdata, sex = isolate(input$t3_sex), fill = "value",
+                organism = "human", outline = isolate(input$t3_outline),
+                fillOutline = isolate(input$t3_outline_colour),
+            ) + theme_void()
+
+            p <- p + scale_fill_viridis(
+                option = isolate(input$t3_palette),
+                alpha = isolate(input$t3_opacity),
+                direction = direc,
+                limits = c(0, t3_max_val())
+            )
+        }
+
+        p
+    })
+
+    output$t3_napi_anatogram <- renderPlot({
+        t3_napi_plot()
+    })
+
+    output$t3_napi_dl <- downloadHandler(
+        filename = function() {
+            paste0("native_american_pacific_islander_anatogram", isolate(input$t3_dl_type))
+        },
+        content = function(file) {
+            ggsave(file, t3_napi_plot(), width = 6)
+        }
+    )
+
+    output$t3_napi_props <- renderDT({
+        input$t3_update
+
+        dat <- isolate(t3_data()$napi)
+        dat <- dat[!is.na(dat$value), ]
+
+        datatable(dat,
+            rownames = FALSE,
+            filter = "top",
+            extensions = c("Buttons"),
+            options = list(
+                search = list(regex = TRUE),
+                pageLength = 10,
+                dom = "Blfrtip",
+                buttons = c("copy", "csv", "excel", "pdf", "print"),
+                autoWidth = FALSE,
+                columnDefs = list(list(width = "30%", targets = 1))
+            )
+        ) %>%
+            formatStyle(0, target = "row", lineHeight = "70%") %>%
+            formatRound(c("value", "CI_lower", "CI_upper"), 4)
+    })
+
+    t3_other_plot <- reactive({
+        direc <- ifelse(isolate(input$t3_reverse), -1, 1)
+
+        pdata <- t3_data()$other
+
+        if (is.null(pdata) || nrow(pdata) == 0) {
+            p <- ggplot() +
+                theme_void() +
+                theme(plot.margin = margin(1, 1, 1, 1, "cm")) +
+                geom_text(aes(x = 0.5, y = 0.5, label = "No results."),
+                    inherit.aes = FALSE, check_overlap = TRUE
+                )
+        } else {
+            p <- gganatogram(
+                data = pdata, sex = isolate(input$t3_sex), fill = "value",
+                organism = "human", outline = isolate(input$t3_outline),
+                fillOutline = isolate(input$t3_outline_colour),
+            ) + theme_void()
+
+            p <- p + scale_fill_viridis(
+                option = isolate(input$t3_palette),
+                alpha = isolate(input$t3_opacity),
+                direction = direc,
+                limits = c(0, t3_max_val())
+            )
+        }
+
+        p
+    })
+
+    output$t3_other_anatogram <- renderPlot({
+        t3_other_plot()
+    })
+
+    output$t3_other_dl <- downloadHandler(
+        filename = function() {
+            paste0("other_unknown_anatogram", isolate(input$t3_dl_type))
+        },
+        content = function(file) {
+            ggsave(file, t3_other_plot(), width = 6)
+        }
+    )
+
+    output$t3_other_props <- renderDT({
+        input$t3_update
+
+        dat <- isolate(t3_data()$other)
+        dat <- dat[!is.na(dat$value), ]
+
+        datatable(dat,
+            rownames = FALSE,
+            filter = "top",
+            extensions = c("Buttons"),
+            options = list(
+                search = list(regex = TRUE),
+                pageLength = 10,
+                dom = "Blfrtip",
+                buttons = c("copy", "csv", "excel", "pdf", "print"),
+                autoWidth = FALSE,
+                columnDefs = list(list(width = "30%", targets = 1))
+            )
+        ) %>%
+            formatStyle(0, target = "row", lineHeight = "70%") %>%
+            formatRound(c("value", "CI_lower", "CI_upper"), 4)
+    })
+
+    t3_sasian_plot <- reactive({
+        direc <- ifelse(isolate(input$t3_reverse), -1, 1)
+
+        pdata <- t3_data()$sasian
+
+        if (is.null(pdata) || nrow(pdata) == 0) {
+            p <- ggplot() +
+                theme_void() +
+                theme(plot.margin = margin(1, 1, 1, 1, "cm")) +
+                geom_text(aes(x = 0.5, y = 0.5, label = "No results."),
+                    inherit.aes = FALSE, check_overlap = TRUE
+                )
+        } else {
+            p <- gganatogram(
+                data = pdata, sex = isolate(input$t3_sex), fill = "value",
+                organism = "human", outline = isolate(input$t3_outline),
+                fillOutline = isolate(input$t3_outline_colour),
+            ) + theme_void()
+
+            p <- p + scale_fill_viridis(
+                option = isolate(input$t3_palette),
+                alpha = isolate(input$t3_opacity),
+                direction = direc,
+                limits = c(0, t3_max_val())
+            )
+        }
+
+        p
+    })
+
+    output$t3_sasian_anatogram <- renderPlot({
+        t3_sasian_plot()
+    })
+
+    output$t3_sasian_dl <- downloadHandler(
+        filename = function() {
+            paste0("south_asian_anatogram", isolate(input$t3_dl_type))
+        },
+        content = function(file) {
+            ggsave(file, t3_sasian_plot(), width = 6)
+        }
+    )
+
+    output$t3_sasian_props <- renderDT({
+        input$t3_update
+
+        dat <- isolate(t3_data()$sasian)
+        dat <- dat[!is.na(dat$value), ]
+
+        datatable(dat,
+            rownames = FALSE,
+            filter = "top",
+            extensions = c("Buttons"),
+            options = list(
+                search = list(regex = TRUE),
+                pageLength = 10,
+                dom = "Blfrtip",
+                buttons = c("copy", "csv", "excel", "pdf", "print"),
+                autoWidth = FALSE,
+                columnDefs = list(list(width = "30%", targets = 1))
+            )
+        ) %>%
+            formatStyle(0, target = "row", lineHeight = "70%") %>%
+            formatRound(c("value", "CI_lower", "CI_upper"), 4)
+    })
 }
 
 shinyApp(ui = ui, server = server)
