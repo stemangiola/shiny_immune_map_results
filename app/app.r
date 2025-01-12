@@ -171,7 +171,7 @@ ui <- navbarPage(
                         prettyCheckbox("t1_reverse", "Reverse Palette", value = FALSE)
                     )
                 ),
-                div(style = "text-align: center;", actionButton("t1_update", "Update Plots"))
+                # div(style = "text-align: center;", actionButton("t1_update", "Update Plots"))
             ),
             mainPanel(
                 width = 9,
@@ -246,7 +246,7 @@ ui <- navbarPage(
                         prettyCheckbox("t2_reverse", "Reverse Palette", value = FALSE)
                     )
                 ),
-                div(style = "text-align: center;", actionButton("t2_update", "Update Plots"))
+                # div(style = "text-align: center;", actionButton("t2_update", "Update Plots"))
             ),
             mainPanel(
                 width = 9,
@@ -355,7 +355,7 @@ ui <- navbarPage(
                         prettyCheckbox("t3_reverse", "Reverse Palette", value = FALSE)
                     )
                 ),
-                div(style = "text-align: center;", actionButton("t3_update", "Update Plots"))
+                # div(style = "text-align: center;", actionButton("t3_update", "Update Plots"))
             ),
             mainPanel(
                 width = 9,
@@ -465,29 +465,29 @@ server <- function(input, output) {
     # Comparisons by Sex Tab
 
     t1_male_data <- reactive({
-        input$t1_update
+        # input$t1_update
 
         make_plot_data(prop_data,
-            celltype = isolate(input$t1_cell_type),
+            celltype = input$t1_cell_type,
             male_organ_map = male_organ_list,
             female_organ_map = female_organ_list,
-            tissue_groups = isolate(input$t1_tissue_groups),
-            age = isolate(input$t1_age),
-            ethnicity = isolate(input$t1_ethnicity),
+            tissue_groups = input$t1_tissue_groups,
+            age = input$t1_age,
+            ethnicity = input$t1_ethnicity,
             sex = "male"
         )
     })
 
     t1_female_data <- reactive({
-        input$t1_update
+        # input$t1_update
 
         make_plot_data(prop_data,
-            celltype = isolate(input$t1_cell_type),
+            celltype = input$t1_cell_type,
             male_organ_map = male_organ_list,
             female_organ_map = female_organ_list,
-            tissue_groups = isolate(input$t1_tissue_groups),
-            age = isolate(input$t1_age),
-            ethnicity = isolate(input$t1_ethnicity),
+            tissue_groups = input$t1_tissue_groups,
+            age = input$t1_age,
+            ethnicity = input$t1_ethnicity,
             sex = "female"
         )
     })
@@ -497,17 +497,17 @@ server <- function(input, output) {
     })
 
     t1_male_plot <- reactive({
-        direc <- ifelse(isolate(input$t1_reverse), -1, 1)
+        direc <- ifelse(input$t1_reverse, -1, 1)
 
         p <- gganatogram(
             data = t1_male_data(), sex = "male", fill = "value",
-            organism = "human", outline = isolate(input$t1_outline),
-            fillOutline = isolate(input$t1_outline_colour),
+            organism = "human", outline = input$t1_outline,
+            fillOutline = input$t1_outline_colour,
         ) + theme_void()
 
         p + scale_fill_viridis(
-            option = isolate(input$t1_palette),
-            alpha = isolate(input$t1_opacity),
+            option = input$t1_palette,
+            alpha = input$t1_opacity,
             direction = direc,
             limits = c(0, t1_max_val())
         )
@@ -519,7 +519,7 @@ server <- function(input, output) {
 
     output$t1_male_dl <- downloadHandler(
         filename = function() {
-            paste0("male_anatogram", isolate(input$t1_dl_type))
+            paste0("male_anatogram", input$t1_dl_type)
         },
         content = function(file) {
             ggsave(file, t1_male_plot(), width = 6)
@@ -527,9 +527,9 @@ server <- function(input, output) {
     )
 
     output$t1_male_props <- renderDT({
-        input$t1_update
+        # input$t1_update
 
-        datatable(isolate(t1_male_data()),
+        datatable(t1_male_data(),
             rownames = FALSE,
             filter = "top",
             extensions = c("Buttons"),
@@ -547,17 +547,17 @@ server <- function(input, output) {
     })
 
     t1_female_plot <- reactive({
-        direc <- ifelse(isolate(input$t1_reverse), -1, 1)
+        direc <- ifelse(input$t1_reverse, -1, 1)
 
         p <- gganatogram(
             data = t1_female_data(), sex = "female", fill = "value",
-            organism = "human", outline = isolate(input$t1_outline),
-            fillOutline = isolate(input$t1_outline_colour),
+            organism = "human", outline = input$t1_outline,
+            fillOutline = input$t1_outline_colour,
         ) + theme_void()
 
         p + scale_fill_viridis(
-            option = isolate(input$t1_palette),
-            alpha = isolate(input$t1_opacity),
+            option = input$t1_palette,
+            alpha = input$t1_opacity,
             direction = direc,
             limits = c(0, t1_max_val())
         )
@@ -569,7 +569,7 @@ server <- function(input, output) {
 
     output$t1_female_dl <- downloadHandler(
         filename = function() {
-            paste0("female_anatogram", isolate(input$t1_dl_type))
+            paste0("female_anatogram", input$t1_dl_type)
         },
         content = function(file) {
             ggsave(file, t1_female_plot(), width = 6)
@@ -577,9 +577,9 @@ server <- function(input, output) {
     )
 
     output$t1_female_props <- renderDT({
-        input$t1_update
+        # input$t1_update
 
-        datatable(isolate(t1_female_data()),
+        datatable(t1_female_data(),
             rownames = FALSE,
             filter = "top",
             extensions = c("Buttons"),
@@ -599,66 +599,66 @@ server <- function(input, output) {
     # Comparisons by Age Tab
 
     t2_data <- reactive({
-        input$t2_update
+        # input$t2_update
 
         infancy <- make_plot_data(prop_data,
-            celltype = isolate(input$t2_cell_type),
+            celltype = input$t2_cell_type,
             male_organ_map = male_organ_list,
             female_organ_map = female_organ_list,
-            tissue_groups = isolate(input$t2_tissue_groups),
+            tissue_groups = input$t2_tissue_groups,
             age = "Infancy",
-            ethnicity = isolate(input$t2_ethnicity),
-            sex = isolate(input$t2_sex)
+            ethnicity = input$t2_ethnicity,
+            sex = input$t2_sex
         )
 
         childhood <- make_plot_data(prop_data,
-            celltype = isolate(input$t2_cell_type),
+            celltype = input$t2_cell_type,
             male_organ_map = male_organ_list,
             female_organ_map = female_organ_list,
-            tissue_groups = isolate(input$t2_tissue_groups),
+            tissue_groups = input$t2_tissue_groups,
             age = "Childhood",
-            ethnicity = isolate(input$t2_ethnicity),
-            sex = isolate(input$t2_sex)
+            ethnicity = input$t2_ethnicity,
+            sex = input$t2_sex
         )
 
         adolescence <- make_plot_data(prop_data,
-            celltype = isolate(input$t2_cell_type),
+            celltype = input$t2_cell_type,
             male_organ_map = male_organ_list,
             female_organ_map = female_organ_list,
-            tissue_groups = isolate(input$t2_tissue_groups),
+            tissue_groups = input$t2_tissue_groups,
             age = "Adolescence",
-            ethnicity = isolate(input$t2_ethnicity),
-            sex = isolate(input$t2_sex)
+            ethnicity = input$t2_ethnicity,
+            sex = input$t2_sex
         )
 
         ya <- make_plot_data(prop_data,
-            celltype = isolate(input$t2_cell_type),
+            celltype = input$t2_cell_type,
             male_organ_map = male_organ_list,
             female_organ_map = female_organ_list,
-            tissue_groups = isolate(input$t2_tissue_groups),
+            tissue_groups = input$t2_tissue_groups,
             age = "Young Adulthood",
-            ethnicity = isolate(input$t2_ethnicity),
-            sex = isolate(input$t2_sex)
+            ethnicity = input$t2_ethnicity,
+            sex = input$t2_sex
         )
 
         middleage <- make_plot_data(prop_data,
-            celltype = isolate(input$t2_cell_type),
+            celltype = input$t2_cell_type,
             male_organ_map = male_organ_list,
             female_organ_map = female_organ_list,
-            tissue_groups = isolate(input$t2_tissue_groups),
+            tissue_groups = input$t2_tissue_groups,
             age = "Middle Age",
-            ethnicity = isolate(input$t2_ethnicity),
-            sex = isolate(input$t2_sex)
+            ethnicity = input$t2_ethnicity,
+            sex = input$t2_sex
         )
 
         senior <- make_plot_data(prop_data,
-            celltype = isolate(input$t2_cell_type),
+            celltype = input$t2_cell_type,
             male_organ_map = male_organ_list,
             female_organ_map = female_organ_list,
-            tissue_groups = isolate(input$t2_tissue_groups),
+            tissue_groups = input$t2_tissue_groups,
             age = "Senior",
-            ethnicity = isolate(input$t2_ethnicity),
-            sex = isolate(input$t2_sex)
+            ethnicity = input$t2_ethnicity,
+            sex = input$t2_sex
         )
 
         list(
@@ -681,7 +681,7 @@ server <- function(input, output) {
     })
 
     t2_infancy_plot <- reactive({
-        direc <- ifelse(isolate(input$t2_reverse), -1, 1)
+        direc <- ifelse(input$t2_reverse, -1, 1)
 
         pdata <- t2_data()$infancy
 
@@ -694,14 +694,14 @@ server <- function(input, output) {
                 )
         } else {
             p <- gganatogram(
-                data = pdata, sex = isolate(input$t2_sex), fill = "value",
-                organism = "human", outline = isolate(input$t2_outline),
-                fillOutline = isolate(input$t2_outline_colour),
+                data = pdata, sex = input$t2_sex, fill = "value",
+                organism = "human", outline = input$t2_outline,
+                fillOutline = input$t2_outline_colour,
             ) + theme_void()
 
             p <- p + scale_fill_viridis(
-                option = isolate(input$t2_palette),
-                alpha = isolate(input$t2_opacity),
+                option = input$t2_palette,
+                alpha = input$t2_opacity,
                 direction = direc,
                 limits = c(0, t2_max_val())
             )
@@ -716,7 +716,7 @@ server <- function(input, output) {
 
     output$t2_infancy_dl <- downloadHandler(
         filename = function() {
-            paste0("infancy_anatogram", isolate(input$t2_dl_type))
+            paste0("infancy_anatogram", input$t2_dl_type)
         },
         content = function(file) {
             ggsave(file, t2_infancy_plot(), width = 6)
@@ -724,9 +724,9 @@ server <- function(input, output) {
     )
 
     output$t2_infancy_props <- renderDT({
-        input$t2_update
+        # input$t2_update
 
-        dat <- isolate(t2_data()$infancy)
+        dat <- t2_data()$infancy
         dat <- dat[!is.na(dat$value), ]
 
         datatable(dat,
@@ -747,7 +747,7 @@ server <- function(input, output) {
     })
 
     t2_childhood_plot <- reactive({
-        direc <- ifelse(isolate(input$t2_reverse), -1, 1)
+        direc <- ifelse(input$t2_reverse, -1, 1)
 
         pdata <- t2_data()$childhood
 
@@ -760,14 +760,14 @@ server <- function(input, output) {
                 )
         } else {
             p <- gganatogram(
-                data = pdata, sex = isolate(input$t2_sex), fill = "value",
-                organism = "human", outline = isolate(input$t2_outline),
-                fillOutline = isolate(input$t2_outline_colour),
+                data = pdata, sex = input$t2_sex, fill = "value",
+                organism = "human", outline = input$t2_outline,
+                fillOutline = input$t2_outline_colour,
             ) + theme_void()
 
             p <- p + scale_fill_viridis(
-                option = isolate(input$t2_palette),
-                alpha = isolate(input$t2_opacity),
+                option = input$t2_palette,
+                alpha = input$t2_opacity,
                 direction = direc,
                 limits = c(0, t2_max_val())
             )
@@ -782,7 +782,7 @@ server <- function(input, output) {
 
     output$t2_childhood_dl <- downloadHandler(
         filename = function() {
-            paste0("childhood_anatogram", isolate(input$t2_dl_type))
+            paste0("childhood_anatogram", input$t2_dl_type)
         },
         content = function(file) {
             ggsave(file, t2_childhood_plot(), width = 6)
@@ -790,9 +790,9 @@ server <- function(input, output) {
     )
 
     output$t2_childhood_props <- renderDT({
-        input$t2_update
+        # input$t2_update
 
-        dat <- isolate(t2_data()$childhood)
+        dat <- t2_data()$childhood
         dat <- dat[!is.na(dat$value), ]
 
         datatable(dat,
@@ -813,7 +813,7 @@ server <- function(input, output) {
     })
 
     t2_adolescence_plot <- reactive({
-        direc <- ifelse(isolate(input$t2_reverse), -1, 1)
+        direc <- ifelse(input$t2_reverse, -1, 1)
 
         pdata <- t2_data()$adolescence
 
@@ -826,14 +826,14 @@ server <- function(input, output) {
                 )
         } else {
             p <- gganatogram(
-                data = pdata, sex = isolate(input$t2_sex), fill = "value",
-                organism = "human", outline = isolate(input$t2_outline),
-                fillOutline = isolate(input$t2_outline_colour),
+                data = pdata, sex = input$t2_sex, fill = "value",
+                organism = "human", outline = input$t2_outline,
+                fillOutline = input$t2_outline_colour,
             ) + theme_void()
 
             p <- p + scale_fill_viridis(
-                option = isolate(input$t2_palette),
-                alpha = isolate(input$t2_opacity),
+                option = input$t2_palette,
+                alpha = input$t2_opacity,
                 direction = direc,
                 limits = c(0, t2_max_val())
             )
@@ -848,7 +848,7 @@ server <- function(input, output) {
 
     output$t2_adolescence_dl <- downloadHandler(
         filename = function() {
-            paste0("adolescence_anatogram", isolate(input$t2_dl_type))
+            paste0("adolescence_anatogram", input$t2_dl_type)
         },
         content = function(file) {
             ggsave(file, t2_adolescence_plot(), width = 6)
@@ -856,9 +856,9 @@ server <- function(input, output) {
     )
 
     output$t2_adolescence_props <- renderDT({
-        input$t2_update
+        # input$t2_update
 
-        dat <- isolate(t2_data()$adolescence)
+        dat <- t2_data()$adolescence
         dat <- dat[!is.na(dat$value), ]
 
         datatable(dat,
@@ -879,7 +879,7 @@ server <- function(input, output) {
     })
 
     t2_ya_plot <- reactive({
-        direc <- ifelse(isolate(input$t2_reverse), -1, 1)
+        direc <- ifelse(input$t2_reverse, -1, 1)
 
         pdata <- t2_data()$ya
 
@@ -892,14 +892,14 @@ server <- function(input, output) {
                 )
         } else {
             p <- gganatogram(
-                data = pdata, sex = isolate(input$t2_sex), fill = "value",
-                organism = "human", outline = isolate(input$t2_outline),
-                fillOutline = isolate(input$t2_outline_colour),
+                data = pdata, sex = input$t2_sex, fill = "value",
+                organism = "human", outline = input$t2_outline,
+                fillOutline = input$t2_outline_colour,
             ) + theme_void()
 
             p <- p + scale_fill_viridis(
-                option = isolate(input$t2_palette),
-                alpha = isolate(input$t2_opacity),
+                option = input$t2_palette,
+                alpha = input$t2_opacity,
                 direction = direc,
                 limits = c(0, t2_max_val())
             )
@@ -914,7 +914,7 @@ server <- function(input, output) {
 
     output$t2_ya_dl <- downloadHandler(
         filename = function() {
-            paste0("ya_anatogram", isolate(input$t2_dl_type))
+            paste0("ya_anatogram", input$t2_dl_type)
         },
         content = function(file) {
             ggsave(file, t2_ya_plot(), width = 6)
@@ -922,9 +922,9 @@ server <- function(input, output) {
     )
 
     output$t2_ya_props <- renderDT({
-        input$t2_update
+        # input$t2_update
 
-        dat <- isolate(t2_data()$ya)
+        dat <- t2_data()$ya
         dat <- dat[!is.na(dat$value), ]
 
         datatable(dat,
@@ -945,7 +945,7 @@ server <- function(input, output) {
     })
 
     t2_middleage_plot <- reactive({
-        direc <- ifelse(isolate(input$t2_reverse), -1, 1)
+        direc <- ifelse(input$t2_reverse, -1, 1)
 
         pdata <- t2_data()$middleage
 
@@ -958,14 +958,14 @@ server <- function(input, output) {
                 )
         } else {
             p <- gganatogram(
-                data = pdata, sex = isolate(input$t2_sex), fill = "value",
-                organism = "human", outline = isolate(input$t2_outline),
-                fillOutline = isolate(input$t2_outline_colour),
+                data = pdata, sex = input$t2_sex, fill = "value",
+                organism = "human", outline = input$t2_outline,
+                fillOutline = input$t2_outline_colour,
             ) + theme_void()
 
             p <- p + scale_fill_viridis(
-                option = isolate(input$t2_palette),
-                alpha = isolate(input$t2_opacity),
+                option = input$t2_palette,
+                alpha = input$t2_opacity,
                 direction = direc,
                 limits = c(0, t2_max_val())
             )
@@ -980,7 +980,7 @@ server <- function(input, output) {
 
     output$t2_middleage_dl <- downloadHandler(
         filename = function() {
-            paste0("middleage_anatogram", isolate(input$t2_dl_type))
+            paste0("middleage_anatogram", input$t2_dl_type)
         },
         content = function(file) {
             ggsave(file, t2_middleage_plot(), width = 6)
@@ -988,9 +988,9 @@ server <- function(input, output) {
     )
 
     output$t2_middleage_props <- renderDT({
-        input$t2_update
+        # input$t2_update
 
-        dat <- isolate(t2_data()$middleage)
+        dat <- t2_data()$middleage
         dat <- dat[!is.na(dat$value), ]
 
         datatable(dat,
@@ -1011,7 +1011,7 @@ server <- function(input, output) {
     })
 
     t2_senior_plot <- reactive({
-        direc <- ifelse(isolate(input$t2_reverse), -1, 1)
+        direc <- ifelse(input$t2_reverse, -1, 1)
 
         pdata <- t2_data()$senior
 
@@ -1024,14 +1024,14 @@ server <- function(input, output) {
                 )
         } else {
             p <- gganatogram(
-                data = pdata, sex = isolate(input$t2_sex), fill = "value",
-                organism = "human", outline = isolate(input$t2_outline),
-                fillOutline = isolate(input$t2_outline_colour),
+                data = pdata, sex = input$t2_sex, fill = "value",
+                organism = "human", outline = input$t2_outline,
+                fillOutline = input$t2_outline_colour,
             ) + theme_void()
 
             p <- p + scale_fill_viridis(
-                option = isolate(input$t2_palette),
-                alpha = isolate(input$t2_opacity),
+                option = input$t2_palette,
+                alpha = input$t2_opacity,
                 direction = direc,
                 limits = c(0, t2_max_val())
             )
@@ -1046,7 +1046,7 @@ server <- function(input, output) {
 
     output$t2_senior_dl <- downloadHandler(
         filename = function() {
-            paste0("senior_anatogram", isolate(input$t2_dl_type))
+            paste0("senior_anatogram", input$t2_dl_type)
         },
         content = function(file) {
             ggsave(file, t2_senior_plot(), width = 6)
@@ -1054,9 +1054,9 @@ server <- function(input, output) {
     )
 
     output$t2_senior_props <- renderDT({
-        input$t2_update
+        # input$t2_update
 
-        dat <- isolate(t2_data()$senior)
+        dat <- t2_data()$senior
         dat <- dat[!is.na(dat$value), ]
 
         datatable(dat,
@@ -1078,76 +1078,76 @@ server <- function(input, output) {
 
     # Comparisons by Ethnicities Tab
     t3_data <- reactive({
-        input$t3_update
+        # input$t3_update
 
         euro <- make_plot_data(prop_data,
-            celltype = isolate(input$t3_cell_type),
+            celltype = input$t3_cell_type,
             male_organ_map = male_organ_list,
             female_organ_map = female_organ_list,
-            tissue_groups = isolate(input$t3_tissue_groups),
-            age = isolate(input$t3_age),
+            tissue_groups = input$t3_tissue_groups,
+            age = input$t3_age,
             ethnicity = "European",
-            sex = isolate(input$t3_sex)
+            sex = input$t3_sex
         )
 
         afri <- make_plot_data(prop_data,
-            celltype = isolate(input$t3_cell_type),
+            celltype = input$t3_cell_type,
             male_organ_map = male_organ_list,
             female_organ_map = female_organ_list,
-            tissue_groups = isolate(input$t3_tissue_groups),
-            age = isolate(input$t3_age),
+            tissue_groups = input$t3_tissue_groups,
+            age = input$t3_age,
             ethnicity = "African",
-            sex = isolate(input$t3_sex)
+            sex = input$t3_sex
         )
 
         easian <- make_plot_data(prop_data,
-            celltype = isolate(input$t3_cell_type),
+            celltype = input$t3_cell_type,
             male_organ_map = male_organ_list,
             female_organ_map = female_organ_list,
-            tissue_groups = isolate(input$t3_tissue_groups),
-            age = isolate(input$t3_age),
+            tissue_groups = input$t3_tissue_groups,
+            age = input$t3_age,
             ethnicity = "East Asian",
-            sex = isolate(input$t3_sex)
+            sex = input$t3_sex
         )
 
         hisp <- make_plot_data(prop_data,
-            celltype = isolate(input$t3_cell_type),
+            celltype = input$t3_cell_type,
             male_organ_map = male_organ_list,
             female_organ_map = female_organ_list,
-            tissue_groups = isolate(input$t3_tissue_groups),
-            age = isolate(input$t3_age),
+            tissue_groups = input$t3_tissue_groups,
+            age = input$t3_age,
             ethnicity = "Hispanic/Latin American",
-            sex = isolate(input$t3_sex)
+            sex = input$t3_sex
         )
 
         napi <- make_plot_data(prop_data,
-            celltype = isolate(input$t3_cell_type),
+            celltype = input$t3_cell_type,
             male_organ_map = male_organ_list,
             female_organ_map = female_organ_list,
-            tissue_groups = isolate(input$t3_tissue_groups),
-            age = isolate(input$t3_age),
+            tissue_groups = input$t3_tissue_groups,
+            age = input$t3_age,
             ethnicity = "Native American & Pacific Islander",
-            sex = isolate(input$t3_sex)
+            sex = input$t3_sex
         )
 
         other <- make_plot_data(prop_data,
-            celltype = isolate(input$t3_cell_type),
+            celltype = input$t3_cell_type,
             male_organ_map = male_organ_list,
             female_organ_map = female_organ_list,
-            tissue_groups = isolate(input$t3_tissue_groups),
-            age = isolate(input$t3_age),
+            tissue_groups = input$t3_tissue_groups,
+            age = input$t3_age,
             ethnicity = "Other/Unknown",
-            sex = isolate(input$t3_sex)
+            sex = input$t3_sex
         )
 
         sasian <- make_plot_data(prop_data,
-            celltype = isolate(input$t3_cell_type),
+            celltype = input$t3_cell_type,
             male_organ_map = male_organ_list,
             female_organ_map = female_organ_list,
-            tissue_groups = isolate(input$t3_tissue_groups),
-            age = isolate(input$t3_age),
+            tissue_groups = input$t3_tissue_groups,
+            age = input$t3_age,
             ethnicity = "South Asian",
-            sex = isolate(input$t3_sex)
+            sex = input$t3_sex
         )
 
         list(
@@ -1172,7 +1172,7 @@ server <- function(input, output) {
     })
 
     t3_euro_plot <- reactive({
-        direc <- ifelse(isolate(input$t3_reverse), -1, 1)
+        direc <- ifelse(input$t3_reverse, -1, 1)
 
         pdata <- t3_data()$euro
 
@@ -1185,14 +1185,14 @@ server <- function(input, output) {
                 )
         } else {
             p <- gganatogram(
-                data = pdata, sex = isolate(input$t3_sex), fill = "value",
-                organism = "human", outline = isolate(input$t3_outline),
-                fillOutline = isolate(input$t3_outline_colour),
+                data = pdata, sex = input$t3_sex, fill = "value",
+                organism = "human", outline = input$t3_outline,
+                fillOutline = input$t3_outline_colour,
             ) + theme_void()
 
             p <- p + scale_fill_viridis(
-                option = isolate(input$t3_palette),
-                alpha = isolate(input$t3_opacity),
+                option = input$t3_palette,
+                alpha = input$t3_opacity,
                 direction = direc,
                 limits = c(0, t3_max_val())
             )
@@ -1207,7 +1207,7 @@ server <- function(input, output) {
 
     output$t3_euro_dl <- downloadHandler(
         filename = function() {
-            paste0("euro_anatogram", isolate(input$t3_dl_type))
+            paste0("euro_anatogram", input$t3_dl_type)
         },
         content = function(file) {
             ggsave(file, t3_euro_plot(), width = 6)
@@ -1215,9 +1215,9 @@ server <- function(input, output) {
     )
 
     output$t3_euro_props <- renderDT({
-        input$t3_update
+        # input$t3_update
 
-        dat <- isolate(t3_data()$euro)
+        dat <- t3_data()$euro
         dat <- dat[!is.na(dat$value), ]
 
         datatable(dat,
@@ -1238,7 +1238,7 @@ server <- function(input, output) {
     })
 
     t3_afri_plot <- reactive({
-        direc <- ifelse(isolate(input$t3_reverse), -1, 1)
+        direc <- ifelse(input$t3_reverse, -1, 1)
 
         pdata <- t3_data()$afri
 
@@ -1251,14 +1251,14 @@ server <- function(input, output) {
                 )
         } else {
             p <- gganatogram(
-                data = pdata, sex = isolate(input$t3_sex), fill = "value",
-                organism = "human", outline = isolate(input$t3_outline),
-                fillOutline = isolate(input$t3_outline_colour),
+                data = pdata, sex = input$t3_sex, fill = "value",
+                organism = "human", outline = input$t3_outline,
+                fillOutline = input$t3_outline_colour,
             ) + theme_void()
 
             p <- p + scale_fill_viridis(
-                option = isolate(input$t3_palette),
-                alpha = isolate(input$t3_opacity),
+                option = input$t3_palette,
+                alpha = input$t3_opacity,
                 direction = direc,
                 limits = c(0, t3_max_val())
             )
@@ -1273,7 +1273,7 @@ server <- function(input, output) {
 
     output$t3_afri_dl <- downloadHandler(
         filename = function() {
-            paste0("afri_anatogram", isolate(input$t3_dl_type))
+            paste0("afri_anatogram", input$t3_dl_type)
         },
         content = function(file) {
             ggsave(file, t3_afri_plot(), width = 6)
@@ -1281,9 +1281,9 @@ server <- function(input, output) {
     )
 
     output$t3_afri_props <- renderDT({
-        input$t3_update
+        # input$t3_update
 
-        dat <- isolate(t3_data()$afri)
+        dat <- t3_data()$afri
         dat <- dat[!is.na(dat$value), ]
 
         datatable(dat,
@@ -1304,7 +1304,7 @@ server <- function(input, output) {
     })
 
     t3_easian_plot <- reactive({
-        direc <- ifelse(isolate(input$t3_reverse), -1, 1)
+        direc <- ifelse(input$t3_reverse, -1, 1)
 
         pdata <- t3_data()$easian
 
@@ -1317,14 +1317,14 @@ server <- function(input, output) {
                 )
         } else {
             p <- gganatogram(
-                data = pdata, sex = isolate(input$t3_sex), fill = "value",
-                organism = "human", outline = isolate(input$t3_outline),
-                fillOutline = isolate(input$t3_outline_colour),
+                data = pdata, sex = input$t3_sex, fill = "value",
+                organism = "human", outline = input$t3_outline,
+                fillOutline = input$t3_outline_colour,
             ) + theme_void()
 
             p <- p + scale_fill_viridis(
-                option = isolate(input$t3_palette),
-                alpha = isolate(input$t3_opacity),
+                option = input$t3_palette,
+                alpha = input$t3_opacity,
                 direction = direc,
                 limits = c(0, t3_max_val())
             )
@@ -1339,7 +1339,7 @@ server <- function(input, output) {
 
     output$t3_easian_dl <- downloadHandler(
         filename = function() {
-            paste0("east_asian_anatogram", isolate(input$t3_dl_type))
+            paste0("east_asian_anatogram", input$t3_dl_type)
         },
         content = function(file) {
             ggsave(file, t3_easian_plot(), width = 6)
@@ -1347,9 +1347,9 @@ server <- function(input, output) {
     )
 
     output$t3_easian_props <- renderDT({
-        input$t3_update
+        # input$t3_update
 
-        dat <- isolate(t3_data()$easian)
+        dat <- t3_data()$easian
         dat <- dat[!is.na(dat$value), ]
 
         datatable(dat,
@@ -1370,7 +1370,7 @@ server <- function(input, output) {
     })
 
     t3_hisp_plot <- reactive({
-        direc <- ifelse(isolate(input$t3_reverse), -1, 1)
+        direc <- ifelse(input$t3_reverse, -1, 1)
 
         pdata <- t3_data()$hisp
 
@@ -1383,14 +1383,14 @@ server <- function(input, output) {
                 )
         } else {
             p <- gganatogram(
-                data = pdata, sex = isolate(input$t3_sex), fill = "value",
-                organism = "human", outline = isolate(input$t3_outline),
-                fillOutline = isolate(input$t3_outline_colour),
+                data = pdata, sex = input$t3_sex, fill = "value",
+                organism = "human", outline = input$t3_outline,
+                fillOutline = input$t3_outline_colour,
             ) + theme_void()
 
             p <- p + scale_fill_viridis(
-                option = isolate(input$t3_palette),
-                alpha = isolate(input$t3_opacity),
+                option = input$t3_palette,
+                alpha = input$t3_opacity,
                 direction = direc,
                 limits = c(0, t3_max_val())
             )
@@ -1405,7 +1405,7 @@ server <- function(input, output) {
 
     output$t3_hisp_dl <- downloadHandler(
         filename = function() {
-            paste0("hispanic_la_anatogram", isolate(input$t3_dl_type))
+            paste0("hispanic_la_anatogram", input$t3_dl_type)
         },
         content = function(file) {
             ggsave(file, t3_hisp_plot(), width = 6)
@@ -1413,9 +1413,9 @@ server <- function(input, output) {
     )
 
     output$t3_hisp_props <- renderDT({
-        input$t3_update
+        # input$t3_update
 
-        dat <- isolate(t3_data()$hisp)
+        dat <- t3_data()$hisp
         dat <- dat[!is.na(dat$value), ]
 
         datatable(dat,
@@ -1436,7 +1436,7 @@ server <- function(input, output) {
     })
 
     t3_napi_plot <- reactive({
-        direc <- ifelse(isolate(input$t3_reverse), -1, 1)
+        direc <- ifelse(input$t3_reverse, -1, 1)
 
         pdata <- t3_data()$napi
 
@@ -1449,14 +1449,14 @@ server <- function(input, output) {
                 )
         } else {
             p <- gganatogram(
-                data = pdata, sex = isolate(input$t3_sex), fill = "value",
-                organism = "human", outline = isolate(input$t3_outline),
-                fillOutline = isolate(input$t3_outline_colour),
+                data = pdata, sex = input$t3_sex, fill = "value",
+                organism = "human", outline = input$t3_outline,
+                fillOutline = input$t3_outline_colour,
             ) + theme_void()
 
             p <- p + scale_fill_viridis(
-                option = isolate(input$t3_palette),
-                alpha = isolate(input$t3_opacity),
+                option = input$t3_palette,
+                alpha = input$t3_opacity,
                 direction = direc,
                 limits = c(0, t3_max_val())
             )
@@ -1471,7 +1471,7 @@ server <- function(input, output) {
 
     output$t3_napi_dl <- downloadHandler(
         filename = function() {
-            paste0("native_american_pacific_islander_anatogram", isolate(input$t3_dl_type))
+            paste0("native_american_pacific_islander_anatogram", input$t3_dl_type)
         },
         content = function(file) {
             ggsave(file, t3_napi_plot(), width = 6)
@@ -1479,9 +1479,9 @@ server <- function(input, output) {
     )
 
     output$t3_napi_props <- renderDT({
-        input$t3_update
+        # input$t3_update
 
-        dat <- isolate(t3_data()$napi)
+        dat <- t3_data()$napi
         dat <- dat[!is.na(dat$value), ]
 
         datatable(dat,
@@ -1502,7 +1502,7 @@ server <- function(input, output) {
     })
 
     t3_other_plot <- reactive({
-        direc <- ifelse(isolate(input$t3_reverse), -1, 1)
+        direc <- ifelse(input$t3_reverse, -1, 1)
 
         pdata <- t3_data()$other
 
@@ -1515,14 +1515,14 @@ server <- function(input, output) {
                 )
         } else {
             p <- gganatogram(
-                data = pdata, sex = isolate(input$t3_sex), fill = "value",
-                organism = "human", outline = isolate(input$t3_outline),
-                fillOutline = isolate(input$t3_outline_colour),
+                data = pdata, sex = input$t3_sex, fill = "value",
+                organism = "human", outline = input$t3_outline,
+                fillOutline = input$t3_outline_colour,
             ) + theme_void()
 
             p <- p + scale_fill_viridis(
-                option = isolate(input$t3_palette),
-                alpha = isolate(input$t3_opacity),
+                option = input$t3_palette,
+                alpha = input$t3_opacity,
                 direction = direc,
                 limits = c(0, t3_max_val())
             )
@@ -1537,7 +1537,7 @@ server <- function(input, output) {
 
     output$t3_other_dl <- downloadHandler(
         filename = function() {
-            paste0("other_unknown_anatogram", isolate(input$t3_dl_type))
+            paste0("other_unknown_anatogram", input$t3_dl_type)
         },
         content = function(file) {
             ggsave(file, t3_other_plot(), width = 6)
@@ -1545,9 +1545,9 @@ server <- function(input, output) {
     )
 
     output$t3_other_props <- renderDT({
-        input$t3_update
+        # input$t3_update
 
-        dat <- isolate(t3_data()$other)
+        dat <- t3_data()$other
         dat <- dat[!is.na(dat$value), ]
 
         datatable(dat,
@@ -1568,7 +1568,7 @@ server <- function(input, output) {
     })
 
     t3_sasian_plot <- reactive({
-        direc <- ifelse(isolate(input$t3_reverse), -1, 1)
+        direc <- ifelse(input$t3_reverse, -1, 1)
 
         pdata <- t3_data()$sasian
 
@@ -1581,14 +1581,14 @@ server <- function(input, output) {
                 )
         } else {
             p <- gganatogram(
-                data = pdata, sex = isolate(input$t3_sex), fill = "value",
-                organism = "human", outline = isolate(input$t3_outline),
-                fillOutline = isolate(input$t3_outline_colour),
+                data = pdata, sex = input$t3_sex, fill = "value",
+                organism = "human", outline = input$t3_outline,
+                fillOutline = input$t3_outline_colour,
             ) + theme_void()
 
             p <- p + scale_fill_viridis(
-                option = isolate(input$t3_palette),
-                alpha = isolate(input$t3_opacity),
+                option = input$t3_palette,
+                alpha = input$t3_opacity,
                 direction = direc,
                 limits = c(0, t3_max_val())
             )
@@ -1603,7 +1603,7 @@ server <- function(input, output) {
 
     output$t3_sasian_dl <- downloadHandler(
         filename = function() {
-            paste0("south_asian_anatogram", isolate(input$t3_dl_type))
+            paste0("south_asian_anatogram", input$t3_dl_type)
         },
         content = function(file) {
             ggsave(file, t3_sasian_plot(), width = 6)
@@ -1611,9 +1611,9 @@ server <- function(input, output) {
     )
 
     output$t3_sasian_props <- renderDT({
-        input$t3_update
+        # input$t3_update
 
-        dat <- isolate(t3_data()$sasian)
+        dat <- t3_data()$sasian
         dat <- dat[!is.na(dat$value), ]
 
         datatable(dat,
