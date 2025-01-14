@@ -716,6 +716,10 @@ server <- function(input, output) {
         t2_prop_data(t2_senior_props())
     })
 
+    observeEvent(t2_data(), {
+        t2_prop_data(NULL)
+    })
+
     t2_infancy_plot <- reactive({
         direc <- ifelse(input$t2_reverse, -1, 1)
 
