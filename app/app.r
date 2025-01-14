@@ -200,7 +200,7 @@ ui <- navbarPage(
         "Comparisons by Age",
         sidebarLayout(
             sidebarPanel(
-                width = 3,
+                width = 2,
                 h4("Data Selection"),
                 selectInput("t2_cell_type", "Cell Type",
                     choices = unique(prop_data$cell_type_unified_ensemble)
@@ -249,58 +249,61 @@ ui <- navbarPage(
                 # div(style = "text-align: center;", actionButton("t2_update", "Update Plots"))
             ),
             mainPanel(
-                width = 9,
+                width = 10,
                 fluidRow(
                     column(
-                        4,
-                        h3("Infancy Proportions"),
-                        plotOutput("t2_infancy_anatogram", width = "320px", height = "450px"),
-                        downloadButton("t2_infancy_dl", "Download Plot"),
-                        hr(),
-                        div(DTOutput("t2_infancy_props"), style = "font-size:70%;")
+                        2,
+                        h3("Infancy"),
+                        #plotOutput("t2_infancy_anatogram", width = "320px", height = "450px"),
+                        plotOutput("t2_infancy_anatogram", width = "250px", height = "360px"),
+                        splitLayout(downloadButton("t2_infancy_dl", "Download"), actionButton("t2_infancy_show", "Show Data")),
+                        # hr(),
+                        # div(DTOutput("t2_infancy_props"), style = "font-size:70%;")
                     ),
                     column(
-                        4,
-                        h3("Childhood Proportions"),
-                        plotOutput("t2_childhood_anatogram", width = "320px", height = "450px"),
-                        downloadButton("t2_childhood_dl", "Download Plot"),
-                        hr(),
-                        div(DTOutput("t2_childhood_props"), style = "font-size:70%;")
+                        2,
+                        h3("Childhood"),
+                        plotOutput("t2_childhood_anatogram", width = "250px", height = "360px"),
+                        splitLayout(downloadButton("t2_childhood_dl", "Download"), actionButton("t2_childhood_show", "Show Data")),
+                        # hr(),
+                        # div(DTOutput("t2_childhood_props"), style = "font-size:70%;")
                     ),
                     column(
-                        4,
-                        h3("Adolescence Proportions"),
-                        plotOutput("t2_adolescence_anatogram", width = "320px", height = "450px"),
-                        downloadButton("t2_adolescence_dl", "Download Plot"),
-                        hr(),
-                        div(DTOutput("t2_adolescence_props"), style = "font-size:70%;")
+                        2,
+                        h3("Adolescence"),
+                        plotOutput("t2_adolescence_anatogram", width = "250px", height = "360px"),
+                        splitLayout(downloadButton("t2_adolescence_dl", "Download"), actionButton("t2_adolescence_show", "Show Data")),
+                        # hr(),
+                        # div(DTOutput("t2_adolescence_props"), style = "font-size:70%;")
                     ),
+                    column(
+                        2,
+                        h3("Young Adulthood"),
+                        plotOutput("t2_ya_anatogram", width = "250px", height = "360px"),
+                        splitLayout(downloadButton("t2_ya_dl", "Download"), actionButton("t2_ya_show", "Show Data")),
+                        # hr(),
+                        # div(DTOutput("t2_ya_props"), style = "font-size:70%;")
+                    ),
+                    column(
+                        2,
+                        h3("Middle Age"),
+                        plotOutput("t2_middleage_anatogram", width = "250px", height = "360px"),
+                        splitLayout(downloadButton("t2_middleage_dl", "Download"), actionButton("t2_middleage_show", "Show Data")),
+                        # hr(),
+                        # div(DTOutput("t2_middleage_props"), style = "font-size:70%;")
+                    ),
+                    column(
+                        2,
+                        h3("Senior"),
+                        plotOutput("t2_senior_anatogram", width = "250px", height = "360px"),
+                        splitLayout(downloadButton("t2_senior_dl", "Download"), actionButton("t2_senior_show", "Show Data")),
+                        # hr(),
+                        # div(DTOutput("t2_senior_props"), style = "font-size:70%;")
+                    )
                 ),
                 fluidRow(
-                    column(
-                        4,
-                        h3("Young Adulthood Proportions"),
-                        plotOutput("t2_ya_anatogram", width = "320px", height = "450px"),
-                        downloadButton("t2_ya_dl", "Download Plot"),
-                        hr(),
-                        div(DTOutput("t2_ya_props"), style = "font-size:70%;")
-                    ),
-                    column(
-                        4,
-                        h3("Middle Age Proportions"),
-                        plotOutput("t2_middleage_anatogram", width = "320px", height = "450px"),
-                        downloadButton("t2_middleage_dl", "Download Plot"),
-                        hr(),
-                        div(DTOutput("t2_middleage_props"), style = "font-size:70%;")
-                    ),
-                    column(
-                        4,
-                        h3("Senior Proportions"),
-                        plotOutput("t2_senior_anatogram", width = "320px", height = "450px"),
-                        downloadButton("t2_senior_dl", "Download Plot"),
-                        hr(),
-                        div(DTOutput("t2_senior_props"), style = "font-size:70%;")
-                    ),
+                    hr(),
+                    div(DTOutput("t2_props"), style = "font-size:70%;")
                 )
             )
         )
@@ -462,7 +465,7 @@ server <- function(input, output) {
             formatRound(c("proportion_mean", "proportion_lower", "proportion_upper"), 4)
     })
 
-    # Comparisons by Sex Tab
+    ### Comparisons by Sex Tab
 
     t1_male_data <- reactive({
         # input$t1_update
@@ -596,7 +599,7 @@ server <- function(input, output) {
             formatRound(c("value", "CI_lower", "CI_upper"), 4)
     })
 
-    # Comparisons by Age Tab
+    ### Comparisons by Age Tab
 
     t2_data <- reactive({
         # input$t2_update
@@ -680,6 +683,39 @@ server <- function(input, output) {
         t2_data()$senior$value, na.rm = TRUE)
     })
 
+    t2_prop_data <- reactiveVal()
+
+    output$t2_props <- renderDT({
+        req(t2_prop_data)
+
+        t2_prop_data()
+    })
+
+    # Observers to update the data table when the "Show Data" button is clicked
+    observeEvent(input$t2_infancy_show, {
+        t2_prop_data(t2_infancy_props())
+    })
+
+    observeEvent(input$t2_childhood_show, {
+        t2_prop_data(t2_childhood_props())
+    })
+
+    observeEvent(input$t2_adolescence_show, {
+        t2_prop_data(t2_adolescence_props())
+    })
+
+    observeEvent(input$t2_ya_show, {
+        t2_prop_data(t2_ya_props())
+    })
+
+    observeEvent(input$t2_middleage_show, {
+        t2_prop_data(t2_middleage_props())
+    })
+
+    observeEvent(input$t2_senior_show, {
+        t2_prop_data(t2_senior_props())
+    })
+
     t2_infancy_plot <- reactive({
         direc <- ifelse(input$t2_reverse, -1, 1)
 
@@ -723,7 +759,7 @@ server <- function(input, output) {
         }
     )
 
-    output$t2_infancy_props <- renderDT({
+    t2_infancy_props <- reactive({
         # input$t2_update
 
         dat <- t2_data()$infancy
@@ -789,7 +825,7 @@ server <- function(input, output) {
         }
     )
 
-    output$t2_childhood_props <- renderDT({
+    t2_childhood_props <- reactive({
         # input$t2_update
 
         dat <- t2_data()$childhood
@@ -855,7 +891,7 @@ server <- function(input, output) {
         }
     )
 
-    output$t2_adolescence_props <- renderDT({
+    t2_adolescence_props <- reactive({
         # input$t2_update
 
         dat <- t2_data()$adolescence
@@ -921,7 +957,7 @@ server <- function(input, output) {
         }
     )
 
-    output$t2_ya_props <- renderDT({
+    t2_ya_props <- reactive({
         # input$t2_update
 
         dat <- t2_data()$ya
@@ -987,7 +1023,7 @@ server <- function(input, output) {
         }
     )
 
-    output$t2_middleage_props <- renderDT({
+    t2_middleage_props <- reactive({
         # input$t2_update
 
         dat <- t2_data()$middleage
@@ -1053,7 +1089,7 @@ server <- function(input, output) {
         }
     )
 
-    output$t2_senior_props <- renderDT({
+    t2_senior_props <- reactive({
         # input$t2_update
 
         dat <- t2_data()$senior
@@ -1076,7 +1112,7 @@ server <- function(input, output) {
             formatRound(c("value", "CI_lower", "CI_upper"), 4)
     })
 
-    # Comparisons by Ethnicities Tab
+    ### Comparisons by Ethnicities Tab
     t3_data <- reactive({
         # input$t3_update
 
