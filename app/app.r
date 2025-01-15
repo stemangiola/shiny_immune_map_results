@@ -119,7 +119,11 @@ ui <- navbarPage(
         h3 {
             margin-top: 5px;
             margin-bottom: 5px;
-        }"))
+        }
+        .shiny-split-layout {
+            width: 98%;
+        }
+        "))
     ),
     tabPanel(
         "Comparisons by Sex",
@@ -170,8 +174,7 @@ ui <- navbarPage(
                         ),
                         prettyCheckbox("t1_reverse", "Reverse Palette", value = FALSE)
                     )
-                ),
-                # div(style = "text-align: center;", actionButton("t1_update", "Update Plots"))
+                )
             ),
             mainPanel(
                 width = 9,
@@ -245,8 +248,7 @@ ui <- navbarPage(
                         ),
                         prettyCheckbox("t2_reverse", "Reverse Palette", value = FALSE)
                     )
-                ),
-                # div(style = "text-align: center;", actionButton("t2_update", "Update Plots"))
+                )
             ),
             mainPanel(
                 width = 10,
@@ -254,51 +256,38 @@ ui <- navbarPage(
                     column(
                         2,
                         h3("Infancy"),
-                        #plotOutput("t2_infancy_anatogram", width = "320px", height = "450px"),
                         plotOutput("t2_infancy_anatogram", width = "250px", height = "360px"),
-                        splitLayout(downloadButton("t2_infancy_dl", "Download"), actionButton("t2_infancy_show", "Show Data")),
-                        # hr(),
-                        # div(DTOutput("t2_infancy_props"), style = "font-size:70%;")
+                        splitLayout(downloadButton("t2_infancy_dl", "Download"), actionButton("t2_infancy_show", "Show Data"))
                     ),
                     column(
                         2,
                         h3("Childhood"),
                         plotOutput("t2_childhood_anatogram", width = "250px", height = "360px"),
-                        splitLayout(downloadButton("t2_childhood_dl", "Download"), actionButton("t2_childhood_show", "Show Data")),
-                        # hr(),
-                        # div(DTOutput("t2_childhood_props"), style = "font-size:70%;")
+                        splitLayout(downloadButton("t2_childhood_dl", "Download"), actionButton("t2_childhood_show", "Show Data"))
                     ),
                     column(
                         2,
                         h3("Adolescence"),
                         plotOutput("t2_adolescence_anatogram", width = "250px", height = "360px"),
-                        splitLayout(downloadButton("t2_adolescence_dl", "Download"), actionButton("t2_adolescence_show", "Show Data")),
-                        # hr(),
-                        # div(DTOutput("t2_adolescence_props"), style = "font-size:70%;")
+                        splitLayout(downloadButton("t2_adolescence_dl", "Download"), actionButton("t2_adolescence_show", "Show Data"))
                     ),
                     column(
                         2,
                         h3("Young Adulthood"),
                         plotOutput("t2_ya_anatogram", width = "250px", height = "360px"),
-                        splitLayout(downloadButton("t2_ya_dl", "Download"), actionButton("t2_ya_show", "Show Data")),
-                        # hr(),
-                        # div(DTOutput("t2_ya_props"), style = "font-size:70%;")
+                        splitLayout(downloadButton("t2_ya_dl", "Download"), actionButton("t2_ya_show", "Show Data"))
                     ),
                     column(
                         2,
                         h3("Middle Age"),
                         plotOutput("t2_middleage_anatogram", width = "250px", height = "360px"),
-                        splitLayout(downloadButton("t2_middleage_dl", "Download"), actionButton("t2_middleage_show", "Show Data")),
-                        # hr(),
-                        # div(DTOutput("t2_middleage_props"), style = "font-size:70%;")
+                        splitLayout(downloadButton("t2_middleage_dl", "Download"), actionButton("t2_middleage_show", "Show Data"))
                     ),
                     column(
                         2,
                         h3("Senior"),
                         plotOutput("t2_senior_anatogram", width = "250px", height = "360px"),
-                        splitLayout(downloadButton("t2_senior_dl", "Download"), actionButton("t2_senior_show", "Show Data")),
-                        # hr(),
-                        # div(DTOutput("t2_senior_props"), style = "font-size:70%;")
+                        splitLayout(downloadButton("t2_senior_dl", "Download"), actionButton("t2_senior_show", "Show Data"))
                     )
                 ),
                 fluidRow(
@@ -312,7 +301,7 @@ ui <- navbarPage(
         "Comparisons by Ethnicity",
         sidebarLayout(
             sidebarPanel(
-                width = 3,
+                width = 2,
                 h4("Data Selection"),
                 selectInput("t3_cell_type", "Cell Type",
                     choices = unique(prop_data$cell_type_unified_ensemble)
@@ -357,72 +346,52 @@ ui <- navbarPage(
                         ),
                         prettyCheckbox("t3_reverse", "Reverse Palette", value = FALSE)
                     )
-                ),
-                # div(style = "text-align: center;", actionButton("t3_update", "Update Plots"))
+                )
             ),
             mainPanel(
-                width = 9,
+                width = 10,
                 fluidRow(
-                    column(
-                        4,
-                        h3("European Proportions"),
-                        plotOutput("t3_euro_anatogram", width = "320px", height = "450px"),
-                        downloadButton("t3_euro_dl", "Download Plot"),
-                        hr(),
-                        div(DTOutput("t3_euro_props"), style = "font-size:70%;")
-                    ),
-                    column(
-                        4,
-                        h3("African Proportions"),
-                        plotOutput("t3_afri_anatogram", width = "320px", height = "450px"),
-                        downloadButton("t3_afri_dl", "Download Plot"),
-                        hr(),
-                        div(DTOutput("t3_afri_props"), style = "font-size:70%;")
-                    ),
-                    column(
-                        4,
-                        h3("East Asian Proportions"),
-                        plotOutput("t3_easian_anatogram", width = "320px", height = "450px"),
-                        downloadButton("t3_easian_dl", "Download Plot"),
-                        hr(),
-                        div(DTOutput("t3_easian_props"), style = "font-size:70%;")
+                    splitLayout(
+                        tagList(
+                            h3("European"),
+                            plotOutput("t3_euro_anatogram", width = "210px", height = "300px"),
+                            splitLayout(downloadButton("t3_euro_dl"), actionButton("t3_euro_show", "Show Data"))
+                        ),
+                        tagList(
+                            h3("African"),
+                            plotOutput("t3_afri_anatogram", width = "210px", height = "300px"),
+                            splitLayout(downloadButton("t3_afri_dl"), actionButton("t3_afri_show", "Show Data"))
+                        ),
+                        tagList(
+                            h3("East Asian"),
+                            plotOutput("t3_easian_anatogram", width = "210px", height = "300px"),
+                            splitLayout(downloadButton("t3_easian_dl"), actionButton("t3_easian_show", "Show Data"))
+                        ),
+                        tagList(
+                            h3("Hisp./Latin Amer."),
+                            plotOutput("t3_hisp_anatogram", width = "210px", height = "300px"),
+                            splitLayout(downloadButton("t3_hisp_dl"), actionButton("t3_hisp_show", "Show Data"))
+                        ),
+                        tagList(
+                            h3("Nat. Amer./Pac. Isl."),
+                            plotOutput("t3_napi_anatogram", width = "210px", height = "300px"),
+                            splitLayout(downloadButton("t3_napi_dl"), actionButton("t3_napi_show", "Show Data"))
+                        ),
+                        tagList(
+                            h3("South Asian"),
+                            plotOutput("t3_sasian_anatogram", width = "210px", height = "300px"),
+                            splitLayout(downloadButton("t3_sasian_dl"), actionButton("t3_sasian_show", "Show Data"))
+                        ),
+                        tagList(
+                            h3("Other/Unknown"),
+                            plotOutput("t3_other_anatogram", width = "210px", height = "300px"),
+                            splitLayout(downloadButton("t3_other_dl"), actionButton("t3_other_show", "Show Data"))
+                        )
                     )
                 ),
                 fluidRow(
-                    column(
-                        4,
-                        h3("Hispanic/Latin American Proportions"),
-                        plotOutput("t3_hisp_anatogram", width = "320px", height = "450px"),
-                        downloadButton("t3_hisp_dl", "Download Plot"),
-                        hr(),
-                        div(DTOutput("t3_hisp_props"), style = "font-size:70%;")
-                    ),
-                    column(
-                        4,
-                        h3("Native American/Pacific Islander Proportions"),
-                        plotOutput("t3_napi_anatogram", width = "320px", height = "450px"),
-                        downloadButton("t3_napi_dl", "Download Plot"),
-                        hr(),
-                        div(DTOutput("t3_napi_props"), style = "font-size:70%;")
-                    ),
-                    column(
-                        4,
-                        h3("South Asian Proportions"),
-                        plotOutput("t3_sasian_anatogram", width = "320px", height = "450px"),
-                        downloadButton("t3_sasian_dl", "Download Plot"),
-                        hr(),
-                        div(DTOutput("t3_sasian_props"), style = "font-size:70%;")
-                    )
-                ),
-                fluidRow(
-                    column(
-                        4,
-                        h3("Other/Unknown Proportions"),
-                        plotOutput("t3_other_anatogram", width = "320px", height = "450px"),
-                        downloadButton("t3_other_dl", "Download Plot"),
-                        hr(),
-                        div(DTOutput("t3_other_props"), style = "font-size:70%;")
-                    )
+                    hr(),
+                    div(DTOutput("t3_props"), style = "font-size:70%;")
                 )
             )
         )
@@ -468,8 +437,6 @@ server <- function(input, output) {
     ### Comparisons by Sex Tab
 
     t1_male_data <- reactive({
-        # input$t1_update
-
         make_plot_data(prop_data,
             celltype = input$t1_cell_type,
             male_organ_map = male_organ_list,
@@ -482,8 +449,6 @@ server <- function(input, output) {
     })
 
     t1_female_data <- reactive({
-        # input$t1_update
-
         make_plot_data(prop_data,
             celltype = input$t1_cell_type,
             male_organ_map = male_organ_list,
@@ -530,8 +495,6 @@ server <- function(input, output) {
     )
 
     output$t1_male_props <- renderDT({
-        # input$t1_update
-
         datatable(t1_male_data(),
             rownames = FALSE,
             filter = "top",
@@ -580,8 +543,6 @@ server <- function(input, output) {
     )
 
     output$t1_female_props <- renderDT({
-        # input$t1_update
-
         datatable(t1_female_data(),
             rownames = FALSE,
             filter = "top",
@@ -602,8 +563,6 @@ server <- function(input, output) {
     ### Comparisons by Age Tab
 
     t2_data <- reactive({
-        # input$t2_update
-
         infancy <- make_plot_data(prop_data,
             celltype = input$t2_cell_type,
             male_organ_map = male_organ_list,
@@ -676,11 +635,13 @@ server <- function(input, output) {
 
     t2_max_val <- reactive({
         max(t2_data()$infancy$value,
-        t2_data()$childhood$value,
-        t2_data()$adolescence$value,
-        t2_data()$ya$value,
-        t2_data()$middleage$value,
-        t2_data()$senior$value, na.rm = TRUE)
+            t2_data()$childhood$value,
+            t2_data()$adolescence$value,
+            t2_data()$ya$value,
+            t2_data()$middleage$value,
+            t2_data()$senior$value,
+            na.rm = TRUE
+        )
     })
 
     t2_prop_data <- reactiveVal()
@@ -764,8 +725,6 @@ server <- function(input, output) {
     )
 
     t2_infancy_props <- reactive({
-        # input$t2_update
-
         dat <- t2_data()$infancy
         dat <- dat[!is.na(dat$value), ]
 
@@ -830,8 +789,6 @@ server <- function(input, output) {
     )
 
     t2_childhood_props <- reactive({
-        # input$t2_update
-
         dat <- t2_data()$childhood
         dat <- dat[!is.na(dat$value), ]
 
@@ -896,8 +853,6 @@ server <- function(input, output) {
     )
 
     t2_adolescence_props <- reactive({
-        # input$t2_update
-
         dat <- t2_data()$adolescence
         dat <- dat[!is.na(dat$value), ]
 
@@ -962,8 +917,6 @@ server <- function(input, output) {
     )
 
     t2_ya_props <- reactive({
-        # input$t2_update
-
         dat <- t2_data()$ya
         dat <- dat[!is.na(dat$value), ]
 
@@ -1028,8 +981,6 @@ server <- function(input, output) {
     )
 
     t2_middleage_props <- reactive({
-        # input$t2_update
-
         dat <- t2_data()$middleage
         dat <- dat[!is.na(dat$value), ]
 
@@ -1094,8 +1045,6 @@ server <- function(input, output) {
     )
 
     t2_senior_props <- reactive({
-        # input$t2_update
-
         dat <- t2_data()$senior
         dat <- dat[!is.na(dat$value), ]
 
@@ -1118,8 +1067,6 @@ server <- function(input, output) {
 
     ### Comparisons by Ethnicities Tab
     t3_data <- reactive({
-        # input$t3_update
-
         euro <- make_plot_data(prop_data,
             celltype = input$t3_cell_type,
             male_organ_map = male_organ_list,
@@ -1203,12 +1150,22 @@ server <- function(input, output) {
 
     t3_max_val <- reactive({
         max(t3_data()$euro$value,
-        t3_data()$afri$value,
-        t3_data()$easian$value,
-        t3_data()$hisp$value,
-        t3_data()$napi$value,
-        t3_data()$other$value,
-        t3_data()$sasian$value, na.rm = TRUE)
+            t3_data()$afri$value,
+            t3_data()$easian$value,
+            t3_data()$hisp$value,
+            t3_data()$napi$value,
+            t3_data()$other$value,
+            t3_data()$sasian$value,
+            na.rm = TRUE
+        )
+    })
+
+    t3_prop_data <- reactiveVal()
+
+    output$t3_props <- renderDT({
+        req(t3_prop_data)
+
+        t3_prop_data()
     })
 
     t3_euro_plot <- reactive({
@@ -1241,6 +1198,39 @@ server <- function(input, output) {
         p
     })
 
+    # Observers to update the data table when the "Show Data" button is clicked
+    observeEvent(input$t3_euro_show, {
+        t3_prop_data(t3_euro_props())
+    })
+
+    observeEvent(input$t3_afri_show, {
+        t3_prop_data(t3_afri_props())
+    })
+
+    observeEvent(input$t3_easian_show, {
+        t3_prop_data(t3_easian_props())
+    })
+
+    observeEvent(input$t3_hisp_show, {
+        t3_prop_data(t3_hisp_props())
+    })
+
+    observeEvent(input$t3_napi_show, {
+        t3_prop_data(t3_napi_props())
+    })
+
+    observeEvent(input$t3_other_show, {
+        t3_prop_data(t3_other_props())
+    })
+
+    observeEvent(input$t3_sasian_show, {
+        t3_prop_data(t3_sasian_props())
+    })
+
+    observeEvent(t3_data(), {
+        t3_prop_data(NULL)
+    })
+
     output$t3_euro_anatogram <- renderPlot({
         t3_euro_plot()
     })
@@ -1254,9 +1244,7 @@ server <- function(input, output) {
         }
     )
 
-    output$t3_euro_props <- renderDT({
-        # input$t3_update
-
+    t3_euro_props <- reactive({
         dat <- t3_data()$euro
         dat <- dat[!is.na(dat$value), ]
 
@@ -1320,9 +1308,7 @@ server <- function(input, output) {
         }
     )
 
-    output$t3_afri_props <- renderDT({
-        # input$t3_update
-
+    t3_afri_props <- reactive({
         dat <- t3_data()$afri
         dat <- dat[!is.na(dat$value), ]
 
@@ -1386,9 +1372,7 @@ server <- function(input, output) {
         }
     )
 
-    output$t3_easian_props <- renderDT({
-        # input$t3_update
-
+    t3_easian_props <- reactive({
         dat <- t3_data()$easian
         dat <- dat[!is.na(dat$value), ]
 
@@ -1452,9 +1436,7 @@ server <- function(input, output) {
         }
     )
 
-    output$t3_hisp_props <- renderDT({
-        # input$t3_update
-
+    t3_hisp_props <- reactive({
         dat <- t3_data()$hisp
         dat <- dat[!is.na(dat$value), ]
 
@@ -1518,9 +1500,7 @@ server <- function(input, output) {
         }
     )
 
-    output$t3_napi_props <- renderDT({
-        # input$t3_update
-
+    t3_napi_props <- reactive({
         dat <- t3_data()$napi
         dat <- dat[!is.na(dat$value), ]
 
@@ -1584,9 +1564,7 @@ server <- function(input, output) {
         }
     )
 
-    output$t3_other_props <- renderDT({
-        # input$t3_update
-
+    t3_other_props <- reactive({
         dat <- t3_data()$other
         dat <- dat[!is.na(dat$value), ]
 
@@ -1650,9 +1628,7 @@ server <- function(input, output) {
         }
     )
 
-    output$t3_sasian_props <- renderDT({
-        # input$t3_update
-
+    t3_sasian_props <- reactive({
         dat <- t3_data()$sasian
         dat <- dat[!is.na(dat$value), ]
 
