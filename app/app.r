@@ -401,19 +401,19 @@ ui <- navbarPage(
         br(),
         div(DTOutput("full_data"), style = "font-size:70%;")
     ),
-    tabPanel(
-        "Gene Expression",
-        sidebarLayout(
-            sidebarPanel(
-                h3("Settings"),
-                p("placeholder")
-            ),
-            mainPanel(
-                h3("placeholder"),
-                p("content")
-            )
-        )
-    )
+    # tabPanel(
+    #     "Gene Expression",
+    #     sidebarLayout(
+    #         sidebarPanel(
+    #             h3("Settings"),
+    #             p("placeholder")
+    #         ),
+    #         mainPanel(
+    #             h3("placeholder"),
+    #             p("content")
+    #         )
+    #     )
+    # )
 )
 
 server <- function(input, output) {
